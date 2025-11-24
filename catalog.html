@@ -15,8 +15,9 @@
                 </div>
                 <nav class="nav">
                     <a href="index.html" class="nav-link">Главная</a>
-                    <a href="catalog.html" class="nav-link active">Каталог</a>
+                    <a href="catalog.html" class="nav-link">Каталог</a>
                     <a href="login.html" class="nav-link">Войти</a>
+                    <a href="register.html" class="nav-link">Регистрация</a>
                 </nav>
             </div>
         </div>
@@ -98,5 +99,53 @@
             <p>&copy; 2024 Библиотека. Все права защищены.</p>
         </div>
     </footer>
+    <!-- Модальное окно деталей книги -->
+<div id="bookModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-body">
+            <div class="book-detail">
+                <div class="book-cover-large">📖</div>
+                <div class="book-detail-info">
+                    <h3 id="modalBookTitle">Название книги</h3>
+                    <p class="book-author" id="modalBookAuthor">Автор</p>
+                    <p class="book-year" id="modalBookYear">Год</p>
+                    <p class="book-genre" id="modalBookGenre">Жанр</p>
+                    <p class="book-description" id="modalBookDescription">
+                        Описание книги будет здесь...
+                    </p>
+                    <div class="book-actions">
+                        <button class="btn btn-primary">Взять книгу</button>
+                        <button class="btn btn-secondary">Добавить в избранное</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Простой скрипт для модального окна
+    const modal = document.getElementById('bookModal');
+    const closeBtn = document.querySelector('.close');
+    
+    // Открытие модального окна при клике на карточку книги
+    document.querySelectorAll('.book-card').forEach(card => {
+        card.addEventListener('click', function() {
+            modal.style.display = 'block';
+        });
+    });
+    
+    // Закрытие модального окна
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Закрытие при клике вне окна
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>
