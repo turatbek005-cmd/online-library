@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Библиотека - Каталог</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>📚 Библиотека</h1>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Главная</a>
+                    <a href="catalog.html" class="nav-link active">Каталог</a>
+                    <a href="login.html" class="nav-link">Войти</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h2 class="page-title">Каталог книг</h2>
+            
+            <!-- Поиск и фильтры -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" placeholder="Поиск книг..." class="search-input">
+                    <button class="btn btn-primary">Найти</button>
+                </div>
+                
+                <div class="filters">
+                    <select class="filter-select">
+                        <option value="">Все жанры</option>
+                        <option value="fiction">Художественная литература</option>
+                        <option value="science">Научная литература</option>
+                        <option value="fantasy">Фэнтези</option>
+                    </select>
+                    
+                    <select class="filter-select">
+                        <option value="">Все авторы</option>
+                        <option value="pushkin">Пушкин</option>
+                        <option value="tolstoy">Толстой</option>
+                        <option value="dostoevsky">Достоевский</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Сетка книг -->
+            <div class="books-grid">
+                <!-- Книга 1 -->
+                <div class="book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <h3 class="book-title">Мастер и Маргарита</h3>
+                        <p class="book-author">Михаил Булгаков</p>
+                        <p class="book-year">1967</p>
+                        <span class="book-status available">Доступна</span>
+                        <button class="btn btn-primary btn-small">Взять книгу</button>
+                    </div>
+                </div>
+
+                <!-- Книга 2 -->
+                <div class="book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <h3 class="book-title">Преступление и наказание</h3>
+                        <p class="book-author">Федор Достоевский</p>
+                        <p class="book-year">1866</p>
+                        <span class="book-status unavailable">Выдана</span>
+                        <button class="btn btn-secondary btn-small" disabled>Недоступна</button>
+                    </div>
+                </div>
+
+                <!-- Книга 3 -->
+                <div class="book-card">
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <h3 class="book-title">1984</h3>
+                        <p class="book-author">Джордж Оруэлл</p>
+                        <p class="book-year">1949</p>
+                        <span class="book-status available">Доступна</span>
+                        <button class="btn btn-primary btn-small">Взять книгу</button>
+                    </div>
+                </div>
+
+                <!-- Добавь больше книг по аналогии -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Библиотека. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>
