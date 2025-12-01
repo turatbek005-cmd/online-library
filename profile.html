@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Библиотека - Личный кабинет</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>📚 the book</h1>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Главная</a>
+                    <a href="catalog.html" class="nav-link">Каталог</a>
+                    <a href="profile.html" class="nav-link active">Мой профиль</a>
+                    <a href="login.html" class="nav-link">Выйти</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h2 class="page-title">Личный кабинет</h2>
+            
+            <div class="profile-layout">
+                <!-- Информация о пользователе -->
+                <div class="profile-sidebar">
+                    <div class="user-card">
+                        <div class="user-avatar">👤</div>
+                        <h3>Иван Иванов</h3>
+                        <p>ivan@example.com</p>
+                        <p class="user-status">Читатель</p>
+                    </div>
+                </div>
+
+                <!-- Мои книги -->
+                <div class="profile-content">
+                    <div class="section">
+                        <h3>Мои книги</h3>
+                        <div class="books-list">
+                            <div class="borrowed-book">
+                                <div class="book-info">
+                                    <h4>Преступление и наказание</h4>
+                                    <p>Федор Достоевский</p>
+                                    <p class="due-date">Вернуть до: <span class="date">15.12.2024</span></p>
+                                </div>
+                                <button class="btn btn-primary btn-small">Продлить</button>
+                            </div>
+                            
+                            <div class="borrowed-book">
+                                <div class="book-info">
+                                    <h4>1984</h4>
+                                    <p>Джордж Оруэлл</p>
+                                    <p class="due-date">Вернуть до: <span class="date">20.12.2024</span></p>
+                                </div>
+                                <button class="btn btn-secondary btn-small">Вернуть</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- История -->
+                    <div class="section">
+                        <h3>История чтения</h3>
+                        <div class="history-list">
+                            <div class="history-item returned">
+                                <span class="book-title">Мастер и Маргарита</span>
+                                <span class="history-date">Возвращена: 01.12.2024</span>
+                            </div>
+                            <div class="history-item returned">
+                                <span class="book-title">Война и мир</span>
+                                <span class="history-date">Возвращена: 15.11.2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Библиотека. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>
