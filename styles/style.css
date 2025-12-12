@@ -14,6 +14,7 @@
     --text: #1f2937;
     --text-light: #6b7280;
     --border: #d9f99d;
+    --primary-rgb: 59, 130, 246;
     
     /* Панель навигации */
     --nav-bg: #ffffff;
@@ -127,17 +128,17 @@ body {
 
 /* Успокаивающая шапка */
 .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: var(--nav-bg);
+    color: var(--nav-text);
+    border-bottom: 2px solid var(--nav-border);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header.scrolled {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgb(255, 255, 255);
     backdrop-filter: blur(10px);
 }
 
@@ -174,34 +175,36 @@ body {
 
 .nav-link {
     text-decoration: none;
-    color: var(--text-light);
+    color: var(--nav-text);
     font-weight: 500;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
 }
 
 .nav-link:hover {
+    background: var(--nav-hover);
     color: var(--primary);
-    background: rgba(93, 125, 154, 0.08);
+    transform: translateY(-2px);
 }
 
 .nav-link.active {
-    color: var(--primary);
-    background: rgba(93, 125, 154, 0.12);
+    background: var(--nav-active);
+    color: var(--nav-active-text);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
 }
 
-.nav-link.active::after {
+.nav-link::after {
     content: '';
     position: absolute;
-    bottom: -6px;
+    bottom: -2px;
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
+    width: 0;
+    height: 2px;
     background: var(--primary);
-    border-radius: 50%;
+    transition: width 0.3s ease;
 }
 
 /* Успокаивающая герой секция */
@@ -483,7 +486,9 @@ html {
 
 /* Плавное переключение активных элементов */
 .nav-link.active {
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: var(--nav-active);
+    color: var(--nav-active-text);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
 }
 
 /* Мягкая анимация для модального окна */
@@ -576,5 +581,34 @@ html {
     
     .book-cover {
         height: 160px;
+    }
+}
+
+.nav-link:hover::after {
+    width: 80%;
+}
+
+/* Иконки в навигации (опционально) */
+.nav-link::before {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* Для мобильной навигации */
+@media (max-width: 768px) {
+    .nav {
+        flex-direction: column;
+        background: var(--nav-bg);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+    
+    .nav.active {
+        display: flex;
     }
 }
