@@ -11,7 +11,7 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <h1>📚 the book</h1>
+                    <h1>📚 Библиотека</h1>
                 </div>
                 <nav class="nav">
                     <a href="index.html" class="nav-link">Главная</a>
@@ -26,34 +26,84 @@
         <div class="container">
             <div class="auth-container">
                 <div class="auth-form">
-                    <h2 class="form-title">Регистрация</h2>
+                    <div class="form-header">
+                        <h2 class="form-title">Создать аккаунт</h2>
+                        <p class="form-subtitle">Зарегистрируйтесь для доступа к библиотеке</p>
+                    </div>
                     
                     <form class="form">
+                        <!-- ФИО -->
                         <div class="form-group">
                             <label for="fullname" class="form-label">ФИО</label>
-                            <input type="text" id="fullname" class="form-input" placeholder="Введите ваше полное имя">
+                            <input 
+                                type="text" 
+                                id="fullname" 
+                                class="form-input" 
+                                placeholder="Иванов Иван Иванович"
+                                required
+                            >
                         </div>
                         
+                        <!-- Email -->
                         <div class="form-group">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" id="email" class="form-input" placeholder="Введите ваш email">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                class="form-input" 
+                                placeholder="example@email.com"
+                                required
+                            >
                         </div>
                         
+                        <!-- Пароль -->
                         <div class="form-group">
                             <label for="password" class="form-label">Пароль</label>
-                            <input type="password" id="password" class="form-input" placeholder="Придумайте пароль">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="form-input" 
+                                placeholder="Минимум 8 символов"
+                                required
+                            >
+                            <div class="form-hint">
+                                Используйте буквы, цифры и специальные символы
+                            </div>
                         </div>
                         
+                        <!-- Подтверждение пароля -->
                         <div class="form-group">
-                            <label for="confirm-password" class="form-label">Подтвердите пароль</label>
-                            <input type="password" id="confirm-password" class="form-input" placeholder="Повторите пароль">
+                            <label for="confirm-password" class="form-label">Подтверждение пароля</label>
+                            <input 
+                                type="password" 
+                                id="confirm-password" 
+                                class="form-input" 
+                                placeholder="Повторите пароль"
+                                required
+                            >
                         </div>
                         
-                        <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
+                        <!-- Кнопка регистрации -->
+                        <button type="submit" class="btn btn-primary btn-full">
+                            Зарегистрироваться
+                        </button>
+                        
+                        <!-- Согласие с условиями -->
+                        <div class="form-checkbox">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms" class="checkbox-label">
+                                Я согласен с <a href="#" class="link">условиями использования</a> и 
+                                <a href="#" class="link">политикой конфиденциальности</a>
+                            </label>
+                        </div>
                     </form>
                     
-                    <div class="auth-links">
-                        <p>Уже есть аккаунт? <a href="login.html" class="link">Войти</a></p>
+                    <!-- Ссылка на вход -->
+                    <div class="auth-footer">
+                        <p>Уже есть аккаунт?</p>
+                        <a href="login.html" class="btn btn-secondary btn-full">
+                            Войти в систему
+                        </a>
                     </div>
                 </div>
             </div>
@@ -65,5 +115,6 @@
             <p>&copy; 2025 Библиотека. Все права защищены.</p>
         </div>
     </footer>
+    <script src="script.js"></script>
 </body>
 </html>
