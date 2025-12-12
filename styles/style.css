@@ -6,14 +6,23 @@
 }
 
 :root {
-    --primary: #b8a1c9;          /* Сиреневый */
-    --primary-hover: #a78fb8;
-    --accent: #e6c5b3;           /* Персиковый */
-    --background: #fbf9fd;       /* Сиренево-молочный */
+    --primary: #5ec2b7;
+    --primary-hover: #4db1a6;
+    --accent: #ffb347;
+    --background: #f8fdfc;
     --surface: #ffffff;
-    --text: #4a3b53;            /* Темно-фиолетовый */
-    --text-light: #7a6a83;      /* Серо-фиолетовый */
-    --border: #efeaf4;          /* Светло-сиреневый */
+    --text: #2a4a46;
+    --text-light: #5c7c78;
+    --border: #e0f0ee;
+    
+    /* Специальные цвета для header и footer */
+    --header-bg: #ffffff;
+    --header-text: #2a4a46;
+    --header-border: #b2f5ea;       /* Светло-бирюзовая рамка */
+    
+    --footer-bg: #f0f9f7;           /* Очень светлый бирюзовый */
+    --footer-text: #486662;
+    --footer-border: #b2f5ea;
 }
 
 body {
