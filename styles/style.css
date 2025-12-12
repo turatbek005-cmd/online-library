@@ -252,13 +252,14 @@ body {
 .feature-card:hover, .book-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-lg);
-}
-
 .feature-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, var(--primary), var(--accent));
+    background-clip: text;
     -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
     -webkit-text-fill-color: transparent;
 }
 
