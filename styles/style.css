@@ -6,18 +6,14 @@
 }
 
 :root {
-    --primary: #93c8a5;          /* Фисташковый */
-    --primary-hover: #81b693;
-    --accent: #d4b483;           /* Песочный */
-    --background: #fafdf8;       /* Фисташково-молочный */
+    --primary: #b8a1c9;          /* Сиреневый */
+    --primary-hover: #a78fb8;
+    --accent: #e6c5b3;           /* Персиковый */
+    --background: #fbf9fd;       /* Сиренево-молочный */
     --surface: #ffffff;
-    --text: #3c4a3e;            /* Темно-зеленый */
-    --text-light: #6b7a6c;      /* Серо-зеленый */
-    --border: #e4ede6;          /* Светло-зеленый */
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 8px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 12px 20px rgba(0, 0, 0, 0.2);
-    
+    --text: #4a3b53;            /* Темно-фиолетовый */
+    --text-light: #7a6a83;      /* Серо-фиолетовый */
+    --border: #efeaf4;          /* Светло-сиреневый */
 }
 
 body {
