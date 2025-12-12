@@ -6,30 +6,30 @@
 }
 
 :root {
-    --primary: #65a30d;          /* Яркий лаймовый */
-    --primary-hover: #4d7c0f;
-    --accent: #a855f7;           /* Фиолетовый */
-    --background: #f7fee7;       /* Лаймово-молочный */
+    --primary: #2a4346;          /* Яркий лаймовый */
+    --primary-hover: #146168;
+    --accent: #9228f5;           /* Фиолетовый */
+    --background: #96985f;       /* Лаймово-молочный */
     --surface: #ffffff;
-    --text: #1f2937;
-    --text-light: #6b7280;
-    --border: #d9f99d;
+    --text: #062424;
+    --text-light: #070604;
+    --border: #323b1f;
     --primary-rgb: 59, 130, 246;
     
     /* Панель навигации */
     --nav-bg: #ffffff;
-    --nav-text: #1f2937;
-    --nav-border: #65a30d;       /* Лаймовая граница */
+    --nav-text: #051020;
+    --nav-border: #080c02;       /* Лаймовая граница */
     --nav-hover: rgba(101, 163, 13, 0.1);
-    --nav-active: #65a30d;
+    --nav-active: #323b26;
     --nav-active-text: #ffffff;
     
     /* Header & Footer */
-    --header-bg: #ffffff;
-    --header-text: #1f2937;
+    --header-bg: #f3ebeb;
+    --header-text: #4e6f9d;
     --header-border: #65a30d;
-    --footer-bg: #ecfccb;        /* Светлый лаймовый */
-    --footer-text: #3f6212;
+    --footer-bg: #7b836b;        /* Светлый лаймовый */
+    --footer-text: #13180d;
     --footer-border: #65a30d;
 }
 
