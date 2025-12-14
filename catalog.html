@@ -1,152 +1,308 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Библиотека - Каталог</title>
-    <link rel="stylesheet" href="styles/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Библиотека — Каталог</title>
+  <link rel="stylesheet" href="styles/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <h1>📚 the book</h1>
-                </div>
-                <nav class="nav">
-                    <a href="index.html" class="nav-link">Главная</a>
-                    <a href="catalog.html" class="nav-link">Каталог</a>
-                    <a href="login.html" class="nav-link">Войти</a>
-                    <a href="register.html" class="nav-link">Регистрация</a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <main class="main">
-        <div class="container">
-            <h2 class="page-title">Каталог книг</h2>
-            
-            <!-- Поиск и фильтры -->
-            <div class="search-section">
-                <div class="search-bar">
-                    <input type="text" placeholder="Поиск книг..." class="search-input">
-                    <button class="btn btn-primary">Найти</button>
-                </div>
-                
-                <div class="filters">
-                    <select class="filter-select">
-                        <option value="">Все жанры</option>
-                        <option value="fiction">Художественная литература</option>
-                        <option value="science">Научная литература</option>
-                        <option value="fantasy">Фэнтези</option>
-                    </select>
-                    
-                    <select class="filter-select">
-                        <option value="">Все авторы</option>
-                        <option value="pushkin">Пушкин</option>
-                        <option value="tolstoy">Толстой</option>
-                        <option value="dostoevsky">Достоевский</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Сетка книг -->
-            <div class="books-grid">
-                <!-- Книга 1 -->
-                <div class="book-card">
-                    <div class="book-cover">📖</div>
-                    <div class="book-info">
-                        <h3 class="book-title">Мастер и Маргарита</h3>
-                        <p class="book-author">Михаил Булгаков</p>
-                        <p class="book-year">1967</p>
-                        <span class="book-status available">Доступна</span>
-                        <button class="btn btn-primary btn-small">Взять книгу</button>
-                    </div>
-                </div>
-
-                <!-- Книга 2 -->
-                <div class="book-card">
-                    <div class="book-cover">📖</div>
-                    <div class="book-info">
-                        <h3 class="book-title">Преступление и наказание</h3>
-                        <p class="book-author">Федор Достоевский</p>
-                        <p class="book-year">1866</p>
-                        <span class="book-status unavailable">Выдана</span>
-                        <button class="btn btn-secondary btn-small" disabled>Недоступна</button>
-                    </div>
-                </div>
-
-                <!-- Книга 3 -->
-                <div class="book-card">
-                    <div class="book-cover">📖</div>
-                    <div class="book-info">
-                        <h3 class="book-title">1984</h3>
-                        <p class="book-author">Джордж Оруэлл</p>
-                        <p class="book-year">1949</p>
-                        <span class="book-status available">Доступна</span>
-                        <button class="btn btn-primary btn-small">Взять книгу</button>
-                    </div>
-                </div>
-
-                <!-- Добавь больше книг по аналогии -->
-            </div>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 Библиотека. Все права защищены.</p>
-        </div>
-    </footer>
-    <!-- Модальное окно деталей книги -->
-<div id="bookModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="modal-body">
-            <div class="book-detail">
-                <div class="book-cover-large">📖</div>
-                <div class="book-detail-info">
-                    <h3 id="modalBookTitle">Название книги</h3>
-                    <p class="book-author" id="modalBookAuthor">Автор</p>
-                    <p class="book-year" id="modalBookYear">Год</p>
-                    <p class="book-genre" id="modalBookGenre">Жанр</p>
-                    <p class="book-description" id="modalBookDescription">
-                        Описание книги будет здесь...
-                    </p>
-                    <div class="book-actions">
-                        <button class="btn btn-primary">Взять книгу</button>
-                        <button class="btn btn-secondary">Добавить в избранное</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="logo">📚 The Book</a>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Главная</a>
+          <a href="catalog.html" class="nav-link active">Каталог</a>
+          <a href="profile.html" class="nav-link">Моя полка</a>
+        </nav>
+      </div>
     </div>
-</div>
-<script>
-    // Простой скрипт для модального окна
+  </header>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title">Каталог книг</h1>
+
+      <section class="search-section">
+        <div class="search-bar">
+          <input type="text" class="form-input" placeholder="Поиск по названию или автору...">
+          <button class="btn btn-primary">Найти</button>
+        </div>
+        <div class="filters">
+          <select class="filter-select">
+            <option>Все жанры</option>
+            <option>Художественная литература</option>
+            <option>Научная литература</option>
+            <option>Фэнтези</option>
+          </select>
+          <select class="filter-select">
+            <option>Все авторы</option>
+            <option>Пушкин</option>
+            <option>Толстой</option>
+            <option>Достоевский</option>
+          </select>
+        </div>
+      </section>
+
+      <div class="books-grid">
+        <!-- Книга 1 -->
+        <div class="book-card" data-id="master" data-title="Мастер и Маргарита" data-author="Михаил Булгаков" data-year="1967">
+          <div class="book-cover">📖</div>
+          <div class="book-info">
+            <h3 class="book-title">Мастер и Маргарита</h3>
+            <p class="book-author">Михаил Булгаков</p>
+            <p class="book-year">1967</p>
+            <button class="btn btn-primary btn-small take-btn" data-id="master">Взять</button>
+          </div>
+        </div>
+
+        <!-- Книга 2 -->
+        <div class="book-card" data-id="crime" data-title="Преступление и наказание" data-author="Фёдор Достоевский" data-year="1866">
+          <div class="book-cover">🕯️</div>
+          <div class="book-info">
+            <h3 class="book-title">Преступление и наказание</h3>
+            <p class="book-author">Фёдор Достоевский</p>
+            <p class="book-year">1866</p>
+            <button class="btn btn-primary btn-small take-btn" data-id="crime">Взять</button>
+          </div>
+        </div>
+
+        <!-- Книга 3 -->
+        <div class="book-card" data-id="1984" data-title="1984" data-author="Джордж Оруэлл" data-year="1949">
+          <div class="book-cover">🔍</div>
+          <div class="book-info">
+            <h3 class="book-title">1984</h3>
+            <p class="book-author">Джордж Оруэлл</p>
+            <p class="book-year">1949</p>
+            <button class="btn btn-primary btn-small take-btn" data-id="1984">Взять</button>
+          </div>
+        </div>
+
+        <!-- Книга 4 -->
+        <div class="book-card" data-id="war" data-title="Война и мир" data-author="Лев Толстой" data-year="1869">
+          <div class="book-cover">⚔️</div>
+          <div class="book-info">
+            <h3 class="book-title">Война и мир</h3>
+            <p class="book-author">Лев Толстой</p>
+            <p class="book-year">1869</p>
+            <button class="btn btn-primary btn-small take-btn" data-id="war">Взять</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Модальное окно -->
+  <div id="bookModal" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <div class="book-detail">
+        <div class="book-cover-large">📖</div>
+        <div class="book-detail-info">
+          <h3 id="modalBookTitle">Название книги</h3>
+          <p class="book-author" id="modalBookAuthor">Автор</p>
+          <p class="book-year" id="modalBookYear">Год</p>
+          <p class="book-description" id="modalBookDescription">
+            Классическое произведение, затрагивающее вечные темы добра, зла, веры и любви.
+          </p>
+          <div class="book-actions">
+            <button class="btn btn-primary" id="modalTakeBtn">Взять книгу</button>
+            <button class="btn btn-secondary" id="addNoteBtn">Добавить цитату</button>
+          </div>
+
+          <!-- Форма для заметки -->
+          <div id="noteForm" style="margin-top: 1.5rem; display: none;">
+            <div class="form-group">
+              <textarea id="quoteInput" placeholder="Цитата или отрывок..." class="form-input" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <textarea id="noteInput" placeholder="Ваши мысли..." class="form-input" rows="2"></textarea>
+            </div>
+            <button id="saveNoteBtn" class="btn btn-primary">Сохранить</button>
+            <button id="cancelNoteBtn" class="btn btn-secondary" style="margin-left: 0.5rem;">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Библиотека «The Book». Всё сохраняется в вашем браузере.</p>
+    </div>
+  </footer>
+
+  <script>
+    // === ФУНКЦИИ ДЛЯ РАБОТЫ С КНИГАМИ ===
+    function getBorrowedBooks() {
+      return JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+    }
+
+    function saveBorrowedBooks(books) {
+      localStorage.setItem('borrowedBooks', JSON.stringify(books));
+    }
+
+    function isBookBorrowed(bookId) {
+      const books = getBorrowedBooks();
+      return books.some(book => book.id === bookId);
+    }
+
+    function borrowBook(bookId, title, author) {
+      const books = getBorrowedBooks();
+      if (books.some(book => book.id === bookId)) {
+        alert('Эта книга уже у вас в полке!');
+        return;
+      }
+
+      books.push({
+        id: bookId,
+        title: title,
+        author: author,
+        date: new Date().toLocaleDateString('ru-RU')
+      });
+
+      saveBorrowedBooks(books);
+      alert(`«${title}» добавлена в вашу полку!`);
+      
+      // Обновляем кнопки на странице
+      updateTakeButtons();
+    }
+
+    function updateTakeButtons() {
+      document.querySelectorAll('.take-btn').forEach(btn => {
+        const id = btn.dataset.id;
+        if (isBookBorrowed(id)) {
+          btn.textContent = 'Уже взята';
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+        } else {
+          btn.textContent = 'Взять';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }
+      });
+    }
+
+    // === ОБРАБОТКА КНОПОК "ВЗЯТЬ" ===
+    document.querySelectorAll('.take-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = btn.dataset.id;
+        const card = btn.closest('.book-card');
+        const title = card.dataset.title;
+        const author = card.dataset.author;
+        borrowBook(id, title, author);
+      });
+    });
+
+    // === МОДАЛЬНОЕ ОКНО ===
     const modal = document.getElementById('bookModal');
     const closeBtn = document.querySelector('.close');
-    
-    // Открытие модального окна при клике на карточку книги
+    let currentBook = null;
+
     document.querySelectorAll('.book-card').forEach(card => {
-        card.addEventListener('click', function() {
-            modal.style.display = 'block';
-        });
-    });
-    
-    // Закрытие модального окна
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Закрытие при клике вне окна
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const title = card.dataset.title;
+        const author = card.dataset.author;
+        const year = card.dataset.year;
+
+        currentBook = { id, title, author, year };
+
+        document.getElementById('modalBookTitle').textContent = title;
+        document.getElementById('modalBookAuthor').textContent = author;
+        document.getElementById('modalBookYear').textContent = year;
+
+        // Описание
+        const descriptions = {
+          "Мастер и Маргарита": "Философский роман о любви, вере и борьбе добра со злом.",
+          "Преступление и наказание": "Психологический роман о морали, вине и искуплении.",
+          "1984": "Антиутопия о тотальном контроле и утрате свободы.",
+          "Война и мир": "Эпопея о жизни русского общества в эпоху Наполеоновских войн."
+        };
+        document.getElementById('modalBookDescription').textContent = 
+          descriptions[title] || "Интересное произведение, рекомендованное нашими библиотекарями.";
+
+        // Кнопка "Взять" в модалке
+        const modalTakeBtn = document.getElementById('modalTakeBtn');
+        if (isBookBorrowed(id)) {
+          modalTakeBtn.textContent = 'Уже в полке';
+          modalTakeBtn.disabled = true;
+        } else {
+          modalTakeBtn.textContent = 'Взять книгу';
+          modalTakeBtn.disabled = false;
         }
+
+        modalTakeBtn.onclick = () => {
+          borrowBook(id, title, author);
+          modal.style.display = 'none';
+        };
+
+        modal.style.display = 'flex';
+      });
     });
-</script>
-<script src="script.js"></script>
+
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+    // === ЗАМЕТКИ ===
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const noteForm = document.getElementById('noteForm');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+    const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+
+    addNoteBtn?.addEventListener('click', () => {
+      noteForm.style.display = 'block';
+      document.getElementById('quoteInput').focus();
+    });
+
+    cancelNoteBtn?.addEventListener('click', () => {
+      noteForm.style.display = 'none';
+      document.getElementById('quoteInput').value = '';
+      document.getElementById('noteInput').value = '';
+    });
+
+    saveNoteBtn?.addEventListener('click', () => {
+      const quote = document.getElementById('quoteInput').value.trim();
+      const note = document.getElementById('noteInput').value.trim();
+      
+      if (!quote && !note) {
+        alert('Введите цитату или заметку');
+        return;
+      }
+
+      const notes = JSON.parse(localStorage.getItem('bookNotes') || '[]');
+      notes.push({
+        id: Date.now(),
+        bookId: currentBook.id,
+        bookTitle: currentBook.title,
+        bookAuthor: currentBook.author,
+        quote: quote,
+        note: note,
+        date: new Date().toLocaleDateString('ru-RU')
+      });
+      
+      localStorage.setItem('bookNotes', JSON.stringify(notes));
+      
+      noteForm.style.display = 'none';
+      document.getElementById('quoteInput').value = '';
+      document.getElementById('noteInput').value = '';
+      
+      alert('Заметка сохранена!');
+    });
+
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    document.addEventListener('DOMContentLoaded', () => {
+      updateTakeButtons();
+      // Отмечаем активность (для календаря)
+      const days = JSON.parse(localStorage.getItem('readingDays') || '[]');
+      const today = new Date().toISOString().split('T')[0];
+      if (!days.includes(today)) {
+        days.push(today);
+        localStorage.setItem('readingDays', JSON.stringify(days));
+      }
+    });
+  </script>
 </body>
 </html>
