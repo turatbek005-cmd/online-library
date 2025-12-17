@@ -1,4 +1,4 @@
-/* === СОВРЕМЕННЫЙ УСПОКАИВАЮЩИЙ САЙТ БИБЛИОТЕКИ === */
+/* === ФОН БИБЛИОТЕЧНЫХ ПОЛОК С ПРОДВИНУТЫМИ ЭФФЕКТАМИ === */
 * {
   margin: 0;
   padding: 0;
@@ -6,134 +6,120 @@
 }
 
 :root {
-  /* Фон — как старая бумага */
-  --bg: #faf8f0;          /* Очень тёплый беж */
-  --surface: #ffffff;
-  --surface-alt: #fdfcf6;
-
-  /* Текст — как чернила */
-  --text: #2c1810;        /* Тёплый почти-чёрный */
+  /* === ЦВЕТОВАЯ ПАЛИТРА В ТЁПЛЫХ ТОНАХ === */
+  --bg-dark: #2c1810;           /* Тёмный фон старых книг */
+  --bg-light: rgba(250, 248, 240, 0.85); /* Светлый оверлей */
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-alt: rgba(253, 252, 246, 0.95);
+  
+  /* === ТЕКСТ === */
+  --text: #2c1810;              /* Тёплый почти-чёрный */
   --text-muted: #5a4a42;
   --text-light: #9a8c82;
-
-  /* Акцент — как кожаный переплёт */
-  --accent: #8b4513;      /* Седло-коричневый (saddlebrown) */
-  --accent-hover: #6b350f;
-  --accent-light: #f3e9d9; /* Тёплый крем */
-
-  /* Вторичный акцент — золото */
-  --gold: #d4af37;
-  --gold-light: #f7f0d7;
-
-  /* Статусы */
-  --status-available: #2e8b57; /* Лесной зелёный */
-  --status-unavailable: #a52a2a; /* Терракотовый */
-
-  /* Границы и тени */
-  --border: #e8dfd5;
-  --shadow: 0 6px 16px rgba(44, 24, 16, 0.06);
-  --shadow-hover: 0 10px 30px rgba(44, 24, 16, 0.12);
-
-  /* Футер — как книжная полка */
-  --footer-bg: #3b2f24;
-  --footer-text: #e8dacf;
-}
-
-body {
-  /* Теплый градиент: от бежевого к легкому кофейному */
-  background: linear-gradient(-45deg, #fdfbf7, #e3d5c5, #f0e6d2, #fffaf0);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
   
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
+  /* === АКЦЕНТЫ === */
+  --accent: #8b4513;            /* Кожаный коричневый */
+  --accent-hover: #6b350f;
+  --accent-light: rgba(139, 69, 19, 0.1);
+  --accent-gold: #d4af37;       /* Золотой акцент */
+  
+  /* === СТАТУСЫ === */
+  --status-available: #2e8b57;
+  --status-unavailable: #a52a2a;
+  
+  /* === ЭФФЕКТЫ === */
+  --shadow: 0 8px 32px rgba(44, 24, 16, 0.08);
+  --shadow-hover: 0 12px 40px rgba(44, 24, 16, 0.15);
+  --glass-blur: blur(20px) saturate(180%);
+  --border: rgba(231, 223, 213, 0.4);
 }
 
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-/* ВАЖНО: Чтобы текст читался, добавляем белый фон контенту */
-main {
-  /* Полупрозрачный белый фон (эффект матового стекла) */
-  background: rgba(250, 248, 240, 0.85); 
-  backdrop-filter: blur(5px); /* Размытие фона под блоком */
-  margin: 2rem auto;
-  border-radius: 20px;
-  padding: 2rem;
-  max-width: 1250px; /* Ограничим ширину контента */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+/* === ФОНОВОЕ ФОТО С ПАРАЛЛАКС ЭФФЕКТОМ === */
+body {
+  /* Фоновая фотография библиотеки */
+  background: 
+    /* Тёмный оверлей для лучшей читаемости */
+    linear-gradient(
+      rgba(44, 24, 16, 0.85),
+      rgba(44, 24, 16, 0.75)
+    ),
+    /* Фотография книжных полок */
+    url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&w=1920&q=80&fit=crop');
+  
+  background-size: cover;
+  background-position: center 30%;
+  background-attachment: fixed; /* Параллакс эффект */
+  background-repeat: no-repeat;
+  color: #f5f1eb;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  line-height: 1.6;
+  position: relative;
+  overflow-x: hidden;
 }
 
+/* Декоративные элементы - частицы (опционально) */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    /* Лёгкий шум для текстуры */
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.02"><filter id="a"><feTurbulence baseFrequency=".8"/></filter><rect width="100%" height="100%" filter="url(%23a)"/></svg>'),
+    /* Золотые блики */
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР С ЭФФЕКТОМ СТЕКЛА === */
 .container {
-  width: min(90%, 1200px);
+  width: min(95%, 1200px);
   margin-inline: auto;
   padding-inline: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* === КНОПКИ === */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background-color: var(--accent);
-  color: white;
-  box-shadow: var(--shadow);
-}
-
-.btn-primary:hover {
-  background-color: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-}
-
-.btn-secondary {
-  background: var(--surface);
-  color: var(--text);
+main {
+  background: var(--bg-light);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: 24px;
+  margin: 2.5rem auto;
+  padding: 2.5rem;
+  max-width: 1250px;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  box-shadow: 
+    var(--shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.btn-secondary:hover {
-  background: var(--surface-alt);
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-}
-
-.btn-small {
-  padding: 0.625rem 1.25rem;
-  font-size: 0.9375rem;
-}
-
-.btn-full {
-  width: 100%;
-}
-
-/* === ШАПКА === */
+/* === ПРЕМИУМ ШАПКА С ЭФФЕКТОМ СТЕКЛА === */
 .header {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   border-bottom: 1px solid var(--border);
-  padding-block: 1rem;
+  padding-block: 1.2rem;
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.header.scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(25px) saturate(200%);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
 }
 
 .header-content {
@@ -143,23 +129,44 @@ main {
   gap: 2rem;
 }
 
+/* Логотип с эффектом */
 .logo {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text);
+  font-size: 2rem;
+  font-weight: 800;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.logo:hover {
+  gap: 0.75rem;
   color: var(--accent);
+  position: relative;
+  padding-right: 1.5rem;
 }
 
+.logo::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 32px;
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(139, 69, 19, 0.4), 
+    transparent);
+}
+
+.logo span {
+  background: linear-gradient(135deg, #8b4513, #d4af37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Навигация */
 .nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.25rem;
   align-items: center;
 }
 
@@ -167,60 +174,341 @@ main {
   text-decoration: none;
   color: var(--text-muted);
   font-weight: 500;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  transition: all 0.25s ease;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid transparent;
 }
 
-.nav-link:hover,
+.nav-link::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(139, 69, 19, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(139, 69, 19, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
 .nav-link.active {
   color: var(--accent);
-  background: var(--accent-light);
+  background: linear-gradient(135deg, 
+    rgba(139, 69, 19, 0.1), 
+    rgba(212, 175, 55, 0.05));
+  border-color: rgba(139, 69, 19, 0.3);
+  font-weight: 600;
 }
 
-/* === ЗАГОЛОВКИ === */
-.page-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin: 2.5rem 0 1.5rem;
-  text-align: center;
-  color: var(--text);
+.nav-link.active::before {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(139, 69, 19, 0.4);
 }
 
-/* === ГЕРОЙ === */
+/* === УЛУЧШЕННЫЕ КНОПКИ === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: none;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.7s ease;
+}
+
+.btn:hover::after {
+  left: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: white;
+  box-shadow: 
+    0 6px 20px rgba(139, 69, 19, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #6b350f, #8b4513);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 10px 30px rgba(139, 69, 19, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent);
+  border: 2px solid rgba(139, 69, 19, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background: white;
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.15);
+}
+
+/* === ГЕРОЙ СЕКЦИЯ НА ФОТО === */
 .hero {
-  padding: 5rem 0 4rem;
+  padding: 6rem 0 4rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  margin-bottom: 3rem;
+  background: 
+    linear-gradient(rgba(44, 24, 16, 0.7), rgba(44, 24, 16, 0.5)),
+    url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?ixlib=rb-4.0.3&w=1200&q=80&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(139, 69, 19, 0.3) 0%,
+    rgba(212, 175, 55, 0.2) 50%,
+    rgba(139, 69, 19, 0.3) 100%
+  );
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-size: clamp(3rem, 6vw, 4.5rem);
   font-weight: 800;
-  margin-bottom: 1.25rem;
-  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.5px;
 }
 
 .hero-text {
-  font-size: 1.125rem;
-  color: var(--text-muted);
+  font-size: 1.35rem;
+  color: rgba(255, 255, 255, 0.9);
   max-width: 650px;
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .hero-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-/* === ФОРМЫ И ПОИСК === */
+/* === КАРТОЧКИ КНИГ С 3D ЭФФЕКТОМ === */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2.5rem;
+  margin: 3rem 0 5rem;
+}
+
+.book-card {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Обложка с эффектом глянца */
+.book-cover {
+  height: 240px;
+  background: linear-gradient(135deg, 
+    rgba(231, 213, 197, 0.9) 0%,
+    rgba(255, 248, 240, 0.9) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+  font-size: 4.5rem;
+  color: var(--accent);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(139, 69, 19, 0.15);
+  transform: translateZ(20px);
+}
+
+/* Эффект переплёта */
+.book-cover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, 
+    rgba(139, 69, 19, 0.4),
+    rgba(139, 69, 19, 0.2),
+    transparent);
+  border-radius: 16px 0 0 16px;
+}
+
+/* Блик на обложке */
+.book-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.8s ease;
+}
+
+.book-card:hover .book-cover::after {
+  left: 150%;
+}
+
+.book-card:hover {
+  transform: 
+    translateY(-10px) 
+    rotateX(5deg) 
+    rotateY(5deg);
+  box-shadow: 
+    var(--shadow-hover),
+    0 20px 60px rgba(139, 69, 19, 0.2);
+  border-color: rgba(139, 69, 19, 0.3);
+}
+
+.book-info {
+  transform: translateZ(10px);
+}
+
+.book-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.book-author {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.book-year {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.book-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.book-status.available {
+  background: rgba(46, 139, 87, 0.2);
+  color: #2e8b57;
+}
+
+.book-status.unavailable {
+  background: rgba(165, 42, 42, 0.2);
+  color: #a52a2a;
+}
+
+/* === ПОИСКОВАЯ СЕКЦИЯ === */
 .search-section {
   background: var(--surface);
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 2.5rem 0;
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin: 3rem 0;
   box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.4s ease;
+}
+
+.search-section:focus-within {
+  transform: translateY(-4px);
+  box-shadow: 
+    var(--shadow-hover),
+    0 0 0 2px rgba(139, 69, 19, 0.1);
 }
 
 .search-bar {
@@ -229,338 +517,246 @@ main {
   margin-bottom: 1.5rem;
 }
 
-@media (max-width: 600px) {
-  .search-bar {
-    flex-direction: column;
-  }
-}
-
 .form-input,
 .filter-select {
-  width: 100%;
-  padding: 0.875rem 1.25rem;
+  flex: 1;
+  padding: 1rem 1.5rem;
   border: 1px solid var(--border);
   border-radius: 12px;
   font-size: 1rem;
-  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
 .form-input:focus,
 .filter-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.15);
+  background: white;
+  box-shadow: 
+    0 0 0 3px rgba(139, 69, 19, 0.1),
+    0 4px 12px rgba(139, 69, 19, 0.05);
+  transform: translateY(-2px);
 }
 
-.filters {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* === КАРТОЧКИ КНИГ === */
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  margin: 2rem 0 4rem;
-}
-
-.book-card {
-  background: var(--surface);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.book-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-hover);
-}
-
-.book-card {
-    /* Нужно для 3D эффекта, чтобы блик не вылезал */
-    transform-style: preserve-3d; 
-    transform: perspective(1000px);
-}
-
-.book-cover {
-  height: 220px; /* Чуть выше */
-  background: linear-gradient(90deg, #e3d5c5 0%, #f0f9f7 5%, #e6f4f2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-  color: var(--accent);
-  position: relative;
-  /* Имитация корешка книги слева */
-  box-shadow: inset 10px 0 20px rgba(0,0,0,0.05); 
-  border-bottom: 4px solid #dcdcdc; /* Толщина страниц снизу */
-}
-
-.book-info {
-  padding: 1.5rem;
-}
-
-.book-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.book-author {
-  color: var(--text-muted);
-  font-size: 0.9375rem;
-  margin-bottom: 0.25rem;
-}
-
-.book-year {
-  color: var(--text-light);
-  font-size: 0.875rem;
-  font-style: italic;
-  margin-bottom: 0.75rem;
-}
-
-.book-status {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.book-status.available {
-  background: rgba(42, 157, 143, 0.15);
-  color: var(--status-available);
-}
-
-.book-status.unavailable {
-  background: rgba(231, 111, 81, 0.15);
-  color: var(--status-unavailable);
-}
-
-/* === МОДАЛЬНОЕ ОКНО === */
-.modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-  padding: 2rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: var(--surface);
-  border-radius: 20px;
-  max-width: 600px;
-  width: 100%;
-  padding: 2.5rem;
-  position: relative;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-.close {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-light);
-  background: none;
-  border: none;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.close:hover {
-  background: var(--surface-alt);
-  color: var(--text);
-}
-
-.book-detail {
-  display: flex;
-  gap: 2rem;
-}
-
-.book-cover-large {
-  width: 180px;
-  height: 260px;
-  background: linear-gradient(135deg, #f0f9f7, #e6f4f2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.book-detail-info h3 {
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.book-description {
-  margin: 1rem 0;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
-
-.book-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-@media (max-width: 600px) {
-  .book-detail {
-    flex-direction: column;
-    text-align: center;
-  }
-  .book-cover-large {
-    margin: 0 auto;
-  }
-  .book-actions {
-    flex-direction: column;
-  }
-}
-
-/* === ФУТЕР === */
+/* === ФУТЕР В СТИЛЕ КНИЖНОЙ ПОЛКИ === */
 .footer {
-  background: var(--footer-bg);
-  color: var(--footer-text);
-  padding: 3rem 0 2rem;
-  margin-top: 4rem;
+  background: 
+    linear-gradient(rgba(44, 24, 16, 0.95), rgba(44, 24, 16, 0.9)),
+    url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&w=1200&q=20&fit=crop&crop=bottom');
+  background-size: cover;
+  background-position: center top;
+  color: #e8dacf;
+  padding: 4rem 0 2.5rem;
+  margin-top: 6rem;
+  position: relative;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* Эффект полок */
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    transparent,
+    var(--accent-gold),
+    var(--accent),
+    var(--accent-gold),
+    transparent
+  );
+}
+
+.footer-content {
   text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .footer p {
-  max-width: 600px;
-  margin: 0 auto;
-  font-size: 0.9375rem;
-  color: #c4c0a8;
+  font-size: 1rem;
+  color: #c4b8a8;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
 }
 
 /* === АДАПТИВНОСТЬ === */
 @media (max-width: 768px) {
+  body {
+    background-attachment: scroll; /* Отключаем параллакс на мобильных */
+  }
+  
   .header-content {
     flex-direction: column;
+    gap: 1rem;
   }
-
+  
+  .nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+  
   .hero {
-    padding: 3rem 0 2.5rem;
+    padding: 4rem 0 3rem;
   }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-text {
+    font-size: 1.15rem;
+  }
+  
+  .books-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .book-card {
+    padding: 1.5rem;
+  }
+  
+  .book-cover {
+    height: 200px;
+  }
+  
+  main {
+    padding: 2rem;
+    margin: 1.5rem;
+  }
+}
 
-  .page-title {
-    font-size: 1.875rem;
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
   }
+  
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+
+/* === АНИМАЦИИ === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Анимация для карточек */
+.book-card {
+  animation: fadeInUp 0.6s ease backwards;
+}
+
+/* Анимация для логотипа */
+.logo span {
+  animation: float 3s infinite ease-in-out;
 }
 
 /* === ДОСТУПНОСТЬ === */
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
-/* Скроллбар */
+/* Стилизация скроллбара */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: rgba(44, 24, 16, 0.1);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: var(--accent-light);
-  border-radius: 4px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent-gold));
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-/* === БЛОК ПРЕИМУЩЕСТВ === */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
-  margin-top: 2.5rem;
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--accent-hover), var(--accent));
 }
 
-.feature-card {
-  background: var(--surface);
-  border-radius: 18px;
-  padding: 2.25rem 1.75rem;
-  text-align: center;
-  box-shadow: var(--shadow);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  border: 1px solid var(--border);
+/* Эффект выделения текста */
+::selection {
+  background: rgba(139, 69, 19, 0.3);
+  color: white;
 }
 
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-hover);
-  border-color: var(--accent-light);
+/* === ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ === */
+
+/* Эффект свечения для активных элементов */
+.nav-link.active,
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
 }
 
-.feature-icon {
-  font-size: 2.8rem;
-  margin-bottom: 1.25rem;
-  color: var(--accent);
-  line-height: 1;
+/* Эффект градиентной границы для карточек */
+.book-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(45deg, 
+    var(--accent), 
+    var(--accent-gold), 
+    var(--accent));
+  border-radius: 21px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.feature-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--text);
-  font-family: 'Cormorant Garamond', serif;
+.book-card:hover::before {
+  opacity: 0.3;
 }
 
-.feature-text {
-  color: var(--text-muted);
-  line-height: 1.6;
-  font-size: 1.05rem;
+/* Эффект при скролле */
+@keyframes scrollReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.shelf {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 1.75rem;
-  box-shadow: var(--shadow);
-}
-
-.shelf-item {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.book-mini {
-  font-size: 2.5rem;
-}
-
-.progress-bar {
-  width: 200px;
-  height: 6px;
-  background: #e0e0e0;
-  border-radius: 3px;
-  margin: 0.5rem 0;
-}
-
-.progress {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 3px;
-  width: 0;
-  transition: width 0.5s ease;
+.scroll-reveal {
+  animation: scrollReveal 0.6s ease forwards;
 }
