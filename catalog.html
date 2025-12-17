@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Библиотека — Каталог</title>
   <link rel="stylesheet" href="styles/style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">   
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
   <header class="header">
@@ -48,7 +49,7 @@
 
       <div class="books-grid">
         <!-- Книга 1 -->
-        <div class="book-card" data-id="master" data-title="Мастер и Маргарита" data-author="Михаил Булгаков" data-year="1967">
+        <div class="book-card" data-genre="художественная" data-id="master" data-title="Мастер и Маргарита" data-author="Михаил Булгаков" data-year="1967">
           <div class="book-cover">📖</div>
           <div class="book-info">
             <h3 class="book-title">Мастер и Маргарита</h3>
@@ -303,6 +304,54 @@
         localStorage.setItem('readingDays', JSON.stringify(days));
       }
     });
+    // === ЖИВОЙ ПОИСК И ФИЛЬТРЫ ===
+    const searchInput = document.querySelector('.form-input');
+    const genreSelect = document.querySelectorAll('.filter-select')[0]; // Первый селект - жанры
+    const authorSelect = document.querySelectorAll('.filter-select')[1]; // Второй - авторы
+    const bookCards = document.querySelectorAll('.book-card');
+
+    function filterBooks() {
+      const searchText = searchInput.value.toLowerCase();
+      const selectedGenre = genreSelect.value;
+      const selectedAuthor = authorSelect.value;
+
+      bookCards.forEach(card => {
+        const title = card.dataset.title.toLowerCase();
+        const author = card.dataset.author; // Тут важно совпадение регистра или можно тоже toLowerCase()
+        // Если у тебя нет data-genre в html, поиск по жанру работать не будет, пока не добавишь
+        const genre = card.dataset.genre || ""; 
+
+        // Проверяем текст
+        const matchesSearch = title.includes(searchText) || author.toLowerCase().includes(searchText);
+        
+        // Проверяем селекты (если выбрано "Все...", то пропускаем проверку)
+        const matchesGenre = selectedGenre.includes("Все") || genre === selectedGenre;
+        const matchesAuthor = selectedAuthor.includes("Все") || author.includes(selectedAuthor);
+
+        if (matchesSearch && matchesGenre && matchesAuthor) {
+          card.style.display = "block";
+          // Добавляем анимацию появления
+          card.style.animation = "fadeIn 0.5s ease";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    }
+
+    // Слушаем события
+    searchInput.addEventListener('input', filterBooks);
+    genreSelect.addEventListener('change', filterBooks);
+    authorSelect.addEventListener('change', filterBooks);
+
+    // Добавим простую анимацию в CSS через JS
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(styleSheet);
   </script>
 </body>
 </html>

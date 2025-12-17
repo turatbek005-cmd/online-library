@@ -40,13 +40,30 @@
 }
 
 body {
-  background-color: var(--bg);
+  /* Теплый градиент: от бежевого к легкому кофейному */
+  background: linear-gradient(-45deg, #fdfbf7, #e3d5c5, #f0e6d2, #fffaf0);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.65;
-  font-weight: 400;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* ВАЖНО: Чтобы текст читался, добавляем белый фон контенту */
+main {
+  /* Полупрозрачный белый фон (эффект матового стекла) */
+  background: rgba(250, 248, 240, 0.85); 
+  backdrop-filter: blur(5px); /* Размытие фона под блоком */
+  margin: 2rem auto;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 1250px; /* Ограничим ширину контента */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .container {
@@ -263,14 +280,24 @@ body {
   box-shadow: var(--shadow-hover);
 }
 
+.book-card {
+    /* Нужно для 3D эффекта, чтобы блик не вылезал */
+    transform-style: preserve-3d; 
+    transform: perspective(1000px);
+}
+
 .book-cover {
-  height: 180px;
-  background: linear-gradient(135deg, #f0f9f7, #e6f4f2);
+  height: 220px; /* Чуть выше */
+  background: linear-gradient(90deg, #e3d5c5 0%, #f0f9f7 5%, #e6f4f2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
+  font-size: 4rem;
   color: var(--accent);
+  position: relative;
+  /* Имитация корешка книги слева */
+  box-shadow: inset 10px 0 20px rgba(0,0,0,0.05); 
+  border-bottom: 4px solid #dcdcdc; /* Толщина страниц снизу */
 }
 
 .book-info {
