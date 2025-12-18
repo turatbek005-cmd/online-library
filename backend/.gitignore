@@ -11,3 +11,5 @@ appsettings.Development.json
 
 # На всякий случай, если остались следы Node.js
 node_modules/
+
+.vs/
