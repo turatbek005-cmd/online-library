@@ -4,27 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Библиотека — Вход</title>
-  
-  <!-- Шрифты -->
+  <link rel="stylesheet" href="css/main.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- НОВЫЕ СТИЛИ -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <header class="header">
     <div class="container">
-      <!-- В main.css мы не писали стили для header, предполагается, 
-           что они перенесены или остались базовыми. 
-           Если шапка "поедет", нужно будет добавить стили для нее в main.css -->
-      <div style="display: flex; justify-content: space-between; padding: 1rem 0; align-items: center;">
-        <a href="index.html" style="font-family: 'Cormorant Garamond'; font-size: 1.5rem; font-weight: 700; color: var(--primary);">📚 The Book</a>
-        <nav style="display: flex; gap: 1rem;">
-          <a href="index.html">Главная</a>
-          <a href="catalog.html">Каталог</a>
-          <a href="login.html" style="color: var(--primary); font-weight: bold;">Войти</a>
+      <div class="header-content">
+        <a href="index.html" class="logo">📚 The Book</a>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Главная</a>
+          <a href="catalog.html" class="nav-link">Каталог</a>
+          <a href="login.html" class="nav-link active">Войти</a>
         </nav>
       </div>
     </div>
@@ -34,7 +25,7 @@
     <div class="container">
       <div class="auth-container">
         <div class="auth-card">
-          <h1 class="page-title">Вход в аккаунт</h1>
+          <h1 class="page-title" style="margin-bottom: 2rem;">Вход в аккаунт</h1>
           <form class="form">
             <div class="form-group">
               <label for="email" class="form-label">Email</label>
@@ -46,15 +37,15 @@
             </div>
             <button type="submit" class="btn btn-primary btn-full">Войти</button>
           </form>
-          <div class="auth-footer">
-            <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+          <div class="auth-footer" style="text-align: center; margin-top: 1.5rem;">
+            <p>Нет аккаунта? <a href="register.html" style="color: var(--accent); font-weight: 600;">Зарегистрироваться</a></p>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <footer style="text-align: center; padding: 2rem; color: var(--text-muted);">
+  <footer class="footer">
     <div class="container">
       <p>&copy; 2025 Библиотека «The Book». Ваша безопасность — наш приоритет.</p>
     </div>

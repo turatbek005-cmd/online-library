@@ -1,31 +1,52 @@
+/* === CSS ПЕРЕМЕННЫЕ === */
 :root {
-  /* === ПАЛИТРА DARK ACADEMIA === */
+  /* === ЦВЕТОВАЯ ПАЛИТРА В ТЁПЛЫХ ТОНАХ === */
+  --bg-dark: #2c1810;
+  --bg-light: rgba(250, 248, 240, 0.85);
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-alt: rgba(253, 252, 246, 0.95);
   
-  /* Основные фоны */
-  --bg-dark: #1a0f0a;           /* Очень темный коричневый (фон страницы) */
-  --bg-overlay: rgba(26, 15, 10, 0.7); /* Затемнение фона */
+  /* === ТЕКСТ === */
+  --text: #2c1810;
+  --text-muted: #5a4a42;
+  --text-light: #9a8c82;
   
-  /* Поверхности (карточки) */
-  --surface: #e8e6df;           /* Светлый бежевый (как старая бумага) */
-  --surface-hover: #f0efe9;
+  /* === АКЦЕНТЫ === */
+  --accent: #8b4513;
+  --accent-hover: #6b350f;
+  --accent-light: rgba(139, 69, 19, 0.1);
+  --accent-gold: #d4af37;
   
-  /* Текст */
-  --text-main: #2c1810;         /* Темно-коричневый (для текста на светлом) */
-  --text-light: #f5f1eb;        /* Светлый (для текста на темном) */
-  --text-muted: #6b5a52;        /* Серый/приглушенный */
+  /* === СТАТУСЫ === */
+  --status-available: #2e8b57;
+  --status-unavailable: #a52a2a;
   
-  /* Акценты */
-  --primary: #8b4513;           /* Классический коричневый */
-  --primary-hover: #6b350f;
-  --accent: #d4af37;            /* Золотой */
-  --error: #a52a2a;             /* Красный для ошибок */
+  /* === ЭФФЕКТЫ === */
+  --shadow: 0 8px 32px rgba(44, 24, 16, 0.08);
+  --shadow-hover: 0 12px 40px rgba(44, 24, 16, 0.15);
+  --glass-blur: blur(20px) saturate(180%);
+  --border: rgba(231, 223, 213, 0.4);
   
-  /* Размеры и отступы */
+  /* === ТИПОГРАФИЯ === */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Cormorant Garamond', serif;
+  
+  /* === ОТСТУПЫ === */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 2.5rem;
+  
+  /* === СКРУГЛЕНИЯ === */
   --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
   
-  /* Тени */
-  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.2);
-  --shadow-input: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* === АНИМАЦИИ === */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
 }
