@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Библиотека — Каталог</title>
+  <link rel="stylesheet" href="styles/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">   
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="logo">📚 The Book</a>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Главная</a>
+          <a href="catalog.html" class="nav-link active">Каталог</a>
+          <a href="profile.html" class="nav-link">Моя полка</a>
+          <a href="login.html" class="nav-link active">Войти</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title">Каталог книг</h1>
+
+      <section class="search-section">
+        <div class="search-bar">
+          <input type="text" id="searchInput" class="form-input" placeholder="Поиск по названию или автору...">
+          <button class="btn btn-primary" id="searchBtn">Найти</button>
+        </div>
+        <div class="filters">
+          <select class="filter-select" id="genreSelect">
+            <option value="all">Все жанры</option>
+            <option value="художественная">Художественная литература</option>
+            <option value="классика">Классика</option>
+            <option value="антиутопия">Антиутопия</option>
+            <option value="фэнтези">Фэнтези</option>
+            <option value="фантастика">Фантастика</option>
+          </select>
+          <select class="filter-select" id="authorSelect">
+            <option value="all">Все авторы</option>
+            <option value="Михаил Булгаков">Михаил Булгаков</option>
+            <option value="Фёдор Достоевский">Фёдор Достоевский</option>
+            <option value="Джордж Оруэлл">Джордж Оруэлл</option>
+            <option value="Лев Толстой">Лев Толстой</option>
+          </select>
+        </div>
+      </section>
+
+      <div class="books-grid" id="booksGrid">
+        <!-- Книги будут загружены динамически -->
+      </div>
+
+      <div id="loadMoreContainer" style="text-align: center; margin: 3rem 0;">
+        <button id="loadMoreBtn" class="btn btn-secondary" style="display: none;">Показать ещё 12 книг</button>
+        <p id="noMoreBooks" style="display: none; color: var(--text-light); margin-top: 2rem;">Вы просмотрели все книги</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Модальное окно -->
+  <div id="bookModal" class="modal">
+    <div class="modal-content">
+      <button class="close">&times;</button>
+      <div class="book-detail">
+        <div class="book-cover-large">📖</div>
+        <div class="book-detail-info">
+          <h3 id="modalBookTitle">Название книги</h3>
+          <p class="book-author" id="modalBookAuthor">Автор</p>
+          <p class="book-year" id="modalBookYear">Год</p>
+          <p class="book-description" id="modalBookDescription">
+            Классическое произведение, затрагивающее вечные темы добра, зла, веры и любви.
+          </p>
+          <div class="book-actions">
+            <button class="btn btn-primary" id="modalTakeBtn">Взять книгу</button>
+            <button class="btn btn-secondary" id="addNoteBtn">Добавить цитату</button>
+          </div>
+
+          <!-- Форма для заметки -->
+          <div id="noteForm" style="margin-top: 1.5rem; display: none;">
+            <div class="form-group">
+              <textarea id="quoteInput" placeholder="Цитата или отрывок..." class="form-input" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <textarea id="noteInput" placeholder="Ваши мысли..." class="form-input" rows="2"></textarea>
+            </div>
+            <button id="saveNoteBtn" class="btn btn-primary">Сохранить</button>
+            <button id="cancelNoteBtn" class="btn btn-secondary" style="margin-left: 0.5rem;">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Библиотека «The Book». Всё сохраняется в вашем браузере.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    // ИМПОРТ ДАННЫХ ИЗ ОТДЕЛЬНОГО ФАЙЛА
+    // В реальном проекте раскомментируйте это:
+    // import { allBooks } from './js/books-data.js';
+    
+    // Временные данные (замените на импорт)
+    const allBooks = [
+      {
+        id: "master",
+        title: "Мастер и Маргарита",
+        author: "Михаил Булгаков",
+        year: "1967",
+        genre: "художественная",
+        cover: "📖",
+        description: "Философский роман о любви, вере и борьбе добра со злом."
+      },
+      {
+        id: "crime",
+        title: "Преступление и наказание",
+        author: "Фёдор Достоевский",
+        year: "1866",
+        genre: "классика",
+        cover: "🕯️",
+        description: "Психологический роман о морали, вине и искуплении."
+      },
+      {
+        id: "1984",
+        title: "1984",
+        author: "Джордж Оруэлл",
+        year: "1949",
+        genre: "антиутопия",
+        cover: "🔍",
+        description: "Антиутопия о тотальном контроле и утрате свободы."
+      },
+      {
+        id: "war",
+        title: "Война и мир",
+        author: "Лев Толстой",
+        year: "1869",
+        genre: "классика",
+        cover: "⚔️",
+        description: "Эпопея о жизни русского общества в эпоху Наполеоновских войн."
+      },
+      {
+        id: "anna",
+        title: "Анна Каренина",
+        author: "Лев Толстой",
+        year: "1877",
+        genre: "классика",
+        cover: "👑",
+        description: "Роман о любви, браке и общественных условностях."
+      },
+      {
+        id: "hobbit",
+        title: "Хоббит",
+        author: "Дж. Р. Р. Толкин",
+        year: "1937",
+        genre: "фэнтези",
+        cover: "🧙",
+        description: "Сказочная повесть о приключениях хоббита Бильбо Бэггинса."
+      },
+      {
+        id: "gatsby",
+        title: "Великий Гэтсби",
+        author: "Ф. Скотт Фицджеральд",
+        year: "1925",
+        genre: "классика",
+        cover: "🎩",
+        description: "Роман о «американской мечте» и её крахе."
+      },
+      {
+        id: "dune",
+        title: "Дюна",
+        author: "Фрэнк Герберт",
+        year: "1965",
+        genre: "фантастика",
+        cover: "🏜️",
+        description: "Эпическая научная фантастика о пустынной планете Арракис."
+      }
+    ];
+
+    // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
+    let currentPage = 1;
+    const booksPerPage = 8;
+    let currentBook = null;
+    let searchTimeout = null;
+
+    // === ФУНКЦИИ ДЛЯ РАБОТЫ С КНИГАМИ ===
+    function getBorrowedBooks() {
+      try {
+        return JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+      } catch (e) {
+        console.error('Ошибка чтения borrowedBooks:', e);
+        return [];
+      }
+    }
+
+    function saveBorrowedBooks(books) {
+      try {
+        localStorage.setItem('borrowedBooks', JSON.stringify(books));
+      } catch (e) {
+        console.error('Ошибка сохранения borrowedBooks:', e);
+        alert('Ошибка сохранения. Проверьте настройки браузера.');
+      }
+    }
+
+    function isBookBorrowed(bookId) {
+      const books = getBorrowedBooks();
+      return books.some(book => book.id === bookId);
+    }
+
+    function borrowBook(bookId, title, author) {
+      const books = getBorrowedBooks();
+      
+      if (books.some(book => book.id === bookId)) {
+        alert('Эта книга уже у вас в полке!');
+        return false;
+      }
+
+      books.push({
+        id: bookId,
+        title: title,
+        author: author,
+        date: new Date().toLocaleDateString('ru-RU'),
+        progress: 0,
+        page: 1
+      });
+
+      saveBorrowedBooks(books);
+      
+      // Конфетти эффект
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (e) {}
+      
+      alert(`«${title}» добавлена в вашу полку!`);
+      return true;
+    }
+
+    // === РЕНДЕРИНГ КНИГ ===
+    function renderBooks(books = allBooks) {
+      const grid = document.getElementById('booksGrid');
+      const start = (currentPage - 1) * booksPerPage;
+      const end = start + booksPerPage;
+      const booksToShow = books.slice(start, end);
+      
+      if (booksToShow.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-light); font-size: 1.1rem;">Книги не найдены</p>';
+        return;
+      }
+      
+      grid.innerHTML += booksToShow.map(book => createBookCard(book)).join('');
+      
+      // Управление кнопкой "Показать ещё"
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      const noMoreBooks = document.getElementById('noMoreBooks');
+      
+      if (end >= books.length) {
+        loadMoreBtn.style.display = 'none';
+        if (books.length > booksPerPage) {
+          noMoreBooks.style.display = 'block';
+        }
+      } else {
+        loadMoreBtn.style.display = 'inline-block';
+        noMoreBooks.style.display = 'none';
+      }
+      
+      updateTakeButtons();
+      attachBookCardEvents();
+    }
+
+    function createBookCard(book) {
+      const isBorrowed = isBookBorrowed(book.id);
+      return `
+        <div class="book-card scroll-reveal" 
+             data-id="${book.id}"
+             data-title="${book.title}"
+             data-author="${book.author}"
+             data-year="${book.year}"
+             data-genre="${book.genre}"
+             data-description="${book.description}">
+          <div class="book-cover">${book.cover}</div>
+          <div class="book-info">
+            <h3 class="book-title">${book.title}</h3>
+            <p class="book-author">${book.author}</p>
+            <p class="book-year">${book.year}</p>
+            <span class="book-status ${isBorrowed ? 'unavailable' : 'available'}">
+              ${isBorrowed ? 'Уже взята' : 'Доступна'}
+            </span>
+            <button class="btn btn-primary btn-small take-btn" 
+                    data-id="${book.id}" 
+                    ${isBorrowed ? 'disabled style="opacity: 0.6"' : ''}>
+              ${isBorrowed ? 'В полке ✓' : 'Взять'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateTakeButtons() {
+      document.querySelectorAll('.take-btn').forEach(btn => {
+        const id = btn.dataset.id;
+        if (isBookBorrowed(id)) {
+          btn.textContent = 'В полке ✓';
+          btn.disabled = true;
+          btn.style.opacity = '0.6';
+        } else {
+          btn.textContent = 'Взять';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }
+      });
+    }
+
+    // === ФИЛЬТРАЦИЯ И ПОИСК ===
+    function filterBooks() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const selectedGenre = document.getElementById('genreSelect').value;
+      const selectedAuthor = document.getElementById('authorSelect').value;
+      
+      return allBooks.filter(book => {
+        const matchesSearch = searchText === '' || 
+          book.title.toLowerCase().includes(searchText) || 
+          book.author.toLowerCase().includes(searchText);
+        
+        const matchesGenre = selectedGenre === 'all' || book.genre === selectedGenre;
+        const matchesAuthor = selectedAuthor === 'all' || book.author === selectedAuthor;
+        
+        return matchesSearch && matchesGenre && matchesAuthor;
+      });
+    }
+
+    function performSearch() {
+      currentPage = 1;
+      const filteredBooks = filterBooks();
+      const grid = document.getElementById('booksGrid');
+      grid.innerHTML = '';
+      renderBooks(filteredBooks);
+    }
+
+    // === МОДАЛЬНОЕ ОКНО ===
+    function openBookModal(bookId) {
+      const book = allBooks.find(b => b.id === bookId);
+      if (!book) return;
+      
+      currentBook = book;
+      
+      document.getElementById('modalBookTitle').textContent = book.title;
+      document.getElementById('modalBookAuthor').textContent = book.author;
+      document.getElementById('modalBookYear').textContent = book.year;
+      document.getElementById('modalBookDescription').textContent = book.description;
+      document.querySelector('.book-cover-large').textContent = book.cover;
+      
+      const modalTakeBtn = document.getElementById('modalTakeBtn');
+      if (isBookBorrowed(bookId)) {
+        modalTakeBtn.textContent = 'Уже в полке';
+        modalTakeBtn.disabled = true;
+        modalTakeBtn.classList.add('btn-secondary');
+        modalTakeBtn.classList.remove('btn-primary');
+      } else {
+        modalTakeBtn.textContent = 'Взять книгу';
+        modalTakeBtn.disabled = false;
+        modalTakeBtn.classList.add('btn-primary');
+        modalTakeBtn.classList.remove('btn-secondary');
+      }
+      
+      document.getElementById('bookModal').style.display = 'flex';
+    }
+
+    // === ОБРАБОТЧИКИ СОБЫТИЙ ===
+    function attachBookCardEvents() {
+      document.querySelectorAll('.book-card').forEach(card => {
+        // Клик по карточке (кроме кнопки)
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.take-btn')) return;
+          const bookId = card.dataset.id;
+          openBookModal(bookId);
+        });
+        
+        // Клик по кнопке "Взять"
+        const takeBtn = card.querySelector('.take-btn');
+        if (takeBtn) {
+          takeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const bookId = takeBtn.dataset.id;
+            const card = takeBtn.closest('.book-card');
+            const title = card.dataset.title;
+            const author = card.dataset.author;
+            
+            if (borrowBook(bookId, title, author)) {
+              updateTakeButtons();
+              const modal = document.getElementById('bookModal');
+              if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // === ЗАМЕТКИ ===
+    function setupNotes() {
+      const addNoteBtn = document.getElementById('addNoteBtn');
+      const noteForm = document.getElementById('noteForm');
+      const saveNoteBtn = document.getElementById('saveNoteBtn');
+      const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+      
+      addNoteBtn?.addEventListener('click', () => {
+        noteForm.style.display = 'block';
+        document.getElementById('quoteInput').focus();
+      });
+      
+      cancelNoteBtn?.addEventListener('click', () => {
+        noteForm.style.display = 'none';
+        document.getElementById('quoteInput').value = '';
+        document.getElementById('noteInput').value = '';
+      });
+      
+      saveNoteBtn?.addEventListener('click', () => {
+        const quote = document.getElementById('quoteInput').value.trim();
+        const note = document.getElementById('noteInput').value.trim();
+        
+        if (!quote && !note) {
+          alert('Введите цитату или заметку');
+          return;
+        }
+        
+        try {
+          const notes = JSON.parse(localStorage.getItem('bookNotes') || '[]');
+          notes.push({
+            id: Date.now(),
+            bookId: currentBook.id,
+            bookTitle: currentBook.title,
+            bookAuthor: currentBook.author,
+            quote: quote,
+            note: note,
+            date: new Date().toLocaleDateString('ru-RU')
+          });
+          
+          localStorage.setItem('bookNotes', JSON.stringify(notes));
+          
+          noteForm.style.display = 'none';
+          document.getElementById('quoteInput').value = '';
+          document.getElementById('noteInput').value = '';
+          
+          alert('Заметка сохранена!');
+        } catch (e) {
+          alert('Ошибка сохранения заметки');
+        }
+      });
+    }
+
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    document.addEventListener('DOMContentLoaded', () => {
+      // Первоначальная загрузка книг
+      renderBooks();
+      
+      // Поиск с debounce
+      document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300);
+      });
+      
+      // Фильтры
+      document.getElementById('genreSelect').addEventListener('change', performSearch);
+      document.getElementById('authorSelect').addEventListener('change', performSearch);
+      
+      // Кнопка "Показать ещё"
+      document.getElementById('loadMoreBtn').addEventListener('click', () => {
+        currentPage++;
+        renderBooks(filterBooks());
+      });
+      
+      // Модальное окно
+      const modal = document.getElementById('bookModal');
+      const closeBtn = document.querySelector('.close');
+      
+      closeBtn.addEventListener('click', () => modal.style.display = 'none');
+      window.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+      
+      // Кнопка "Взять" в модалке
+      document.getElementById('modalTakeBtn').addEventListener('click', () => {
+        if (currentBook && !isBookBorrowed(currentBook.id)) {
+          if (borrowBook(currentBook.id, currentBook.title, currentBook.author)) {
+            updateTakeButtons();
+            modal.style.display = 'none';
+          }
+        }
+      });
+      
+      // Заметки
+      setupNotes();
+      
+      // Анимации
+      setupAnimations();
+    });
+
+    function setupAnimations() {
+      // Анимация появления при скролле
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+    }
+
+    // CSS для анимаций
+    const style = document.createElement('style');
+    style.textContent = `
+      .scroll-reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+      
+      .scroll-reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      
+      .modal-content {
+        background: var(--surface);
+        padding: 2rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+        animation: modalFadeIn 0.3s ease;
+      }
+      
+      @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .close {
+        position: absolute;
+        right: 1.5rem;
+        top: 1.5rem;
+        font-size: 1.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-light);
+      }
+      
+      .book-detail {
+        display: flex;
+        gap: 2rem;
+      }
+      
+      .book-cover-large {
+        font-size: 5rem;
+        background: var(--surface-alt);
+        padding: 2rem;
+        border-radius: 16px;
+        min-width: 120px;
+        text-align: center;
+      }
+      
+      @media (max-width: 768px) {
+        .book-detail { flex-direction: column; text-align: center; }
+        .book-cover-large { margin: 0 auto; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
