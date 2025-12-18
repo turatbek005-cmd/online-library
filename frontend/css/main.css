@@ -1,0 +1,50 @@
+@import url('variables.css'); /* Подключаем переменные */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  /* Если есть картинка фона, раскомментируй строку ниже */
+  /* background-image: url('../assets/images/backgrounds/library-bg.jpg'); */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ссылки */
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s;
+}
+
+/* Заголовки красивым шрифтом */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+}
+
+/* Основной контейнер */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+main {
+  flex: 1; /* Растягиваем контент, чтобы футер был внизу */
+  display: flex;
+  justify-content: center; /* Центруем контент */
+  align-items: center;     /* Центруем контент */
+  padding: 2rem 0;
+}

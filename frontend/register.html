@@ -4,19 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Библиотека — Регистрация</title>
-  <link rel="stylesheet" href="styles/style.css" />
+  
+  <!-- Шрифты -->
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- НОВЫЕ СТИЛИ -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <header class="header">
     <div class="container">
-      <div class="header-content">
-        <a href="index.html" class="logo">📚 The Book</a>
-        <nav class="nav">
-          <a href="index.html" class="nav-link">Главная</a>
-          <a href="catalog.html" class="nav-link">Каталог</a>
-          <a href="login.html" class="nav-link">Войти</a>
-          <a href="register.html" class="nav-link active">Регистрация</a>
+       <div style="display: flex; justify-content: space-between; padding: 1rem 0; align-items: center;">
+        <a href="index.html" style="font-family: 'Cormorant Garamond'; font-size: 1.5rem; font-weight: 700; color: var(--primary);">📚 The Book</a>
+        <nav style="display: flex; gap: 1rem;">
+          <a href="index.html">Главная</a>
+          <a href="catalog.html">Каталог</a>
+          <a href="login.html">Войти</a>
+          <a href="register.html" style="color: var(--primary); font-weight: bold;">Регистрация</a>
         </nav>
       </div>
     </div>
@@ -27,45 +33,45 @@
       <div class="auth-container">
         <div class="auth-card">
           <h1 class="page-title">Создать аккаунт</h1>
-          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Присоединяйтесь к сообществу читателей</p>
+          <p>Присоединяйтесь к сообществу читателей</p>
           
           <form class="form">
             <div class="form-group">
-              <label for="fullname">ФИО</label>
+              <label for="fullname" class="form-label">ФИО</label>
               <input type="text" id="fullname" class="form-input" placeholder="Иванов Иван Иванович" required>
             </div>
             <div class="form-group">
-              <label for="email">Email</label>
+              <label for="email" class="form-label">Email</label>
               <input type="email" id="email" class="form-input" placeholder="ivan@example.com" required>
             </div>
             <div class="form-group">
-              <label for="password">Пароль</label>
+              <label for="password" class="form-label">Пароль</label>
               <input type="password" id="password" class="form-input" placeholder="Минимум 8 символов" required>
             </div>
             <div class="form-group">
-              <label for="confirm">Подтверждение</label>
+              <label for="confirm" class="form-label">Подтверждение</label>
               <input type="password" id="confirm" class="form-input" placeholder="Повторите пароль" required>
             </div>
             
-            <div class="form-checkbox" style="margin: 1.5rem 0; display: flex; gap: 0.5rem;">
+            <div class="form-checkbox">
               <input type="checkbox" id="terms" required>
-              <label for="terms" style="color: var(--text-muted); font-size: 0.95rem;">
-                Я согласен с <a href="#" style="color: var(--accent);">условиями</a> и <a href="#" style="color: var(--accent);">политикой конфиденциальности</a>
+              <label for="terms">
+                Я согласен с <a href="#">условиями</a> и <a href="#">политикой конфиденциальности</a>
               </label>
             </div>
             
             <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
           </form>
           
-          <div class="auth-footer" style="text-align: center; margin-top: 1.5rem;">
-            <p>Уже есть аккаунт? <a href="login.html" style="color: var(--accent); font-weight: 600;">Войти</a></p>
+          <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="footer">
+  <footer style="text-align: center; padding: 2rem; color: var(--text-muted);">
     <div class="container">
       <p>&copy; 2025 Библиотека «The Book». Все права защищены.</p>
     </div>
