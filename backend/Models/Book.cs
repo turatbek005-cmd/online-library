@@ -7,11 +7,12 @@ public class Book
     public string Author { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     
-    // Новые названия полей (как в SQL)
-    public string CoverImage { get; set; } = string.Empty; 
-    public int PublicationYear { get; set; }              
+    public string CoverImage { get; set; } = string.Empty;
+    public int PublicationYear { get; set; }
     
-    // Связи
+    // 🔥 НОВОЕ ПОЛЕ (Ссылка на файл)
+    public string FileUrl { get; set; } = string.Empty;
+
     public int CategoryId { get; set; }
-    public string Genre { get; set; } = string.Empty;   
+    public string Genre { get; set; } = string.Empty;
 }
