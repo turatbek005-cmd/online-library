@@ -26,7 +26,8 @@
       <div class="auth-container">
         <div class="auth-card">
           <h1 class="page-title" style="margin-bottom: 2rem;">Вход в аккаунт</h1>
-          <form class="form">
+          
+          <form class="form" id="loginForm">
             <div class="form-group">
               <label for="email" class="form-label">Email</label>
               <input type="email" id="email" class="form-input" placeholder="ivan@example.com" required>
@@ -37,6 +38,7 @@
             </div>
             <button type="submit" class="btn btn-primary btn-full">Войти</button>
           </form>
+          
           <div class="auth-footer" style="text-align: center; margin-top: 1.5rem;">
             <p>Нет аккаунта? <a href="register.html" style="color: var(--accent); font-weight: 600;">Зарегистрироваться</a></p>
           </div>
@@ -47,8 +49,10 @@
 
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2025 Библиотека «The Book». Ваша безопасность — наш приоритет.</p>
+      <p>&copy; 2025 Библиотека «The Book».</p>
     </div>
   </footer>
+  
+  <script src="script.js"></script>
 </body>
 </html>

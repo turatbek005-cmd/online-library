@@ -29,19 +29,22 @@
           <h1 class="page-title">Создать аккаунт</h1>
           <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Присоединяйтесь к сообществу читателей</p>
           
-          <form class="form">
+          <form class="form" id="registerForm">
             <div class="form-group">
-              <label for="fullname">ФИО</label>
-              <input type="text" id="fullname" class="form-input" placeholder="Иванов Иван Иванович" required>
+              <label for="username">Имя пользователя</label>
+              <input type="text" id="username" class="form-input" placeholder="Имя Фамилия" required>
             </div>
+
             <div class="form-group">
               <label for="email">Email</label>
-              <input type="email" id="email" class="form-input" placeholder="ivan@example.com" required>
+              <input type="email" id="email" class="form-input" placeholder="qwerty@example.com" required>
             </div>
+
             <div class="form-group">
               <label for="password">Пароль</label>
               <input type="password" id="password" class="form-input" placeholder="Минимум 8 символов" required>
             </div>
+
             <div class="form-group">
               <label for="confirm">Подтверждение</label>
               <input type="password" id="confirm" class="form-input" placeholder="Повторите пароль" required>
@@ -70,5 +73,7 @@
       <p>&copy; 2025 Библиотека «The Book». Все права защищены.</p>
     </div>
   </footer>
+      
+  <script src="script.js"></script>
 </body>
 </html>

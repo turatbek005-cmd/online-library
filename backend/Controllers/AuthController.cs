@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using backend.Models;
-using BCrypt.Net; // Подключаем шифровальщик
+using BCrypt.Net; 
 using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
     {
         string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
         
-        // 1. Хешируем пароль (превращаем "123" в "$2a$11$...")
+        // Хешируем пароль
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         try
@@ -34,7 +34,6 @@ public class AuthController : ControllerBase
             await using var connection = new NpgsqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // 2. Сохраняем в базу
             string sql = "INSERT INTO users (username, email, password_hash, role, emeralds) VALUES (@u, @e, @p, 'user', 50)";
             
             await using var command = new NpgsqlCommand(sql, connection);
@@ -47,7 +46,6 @@ public class AuthController : ControllerBase
         }
         catch (PostgresException ex)
         {
-            // Код 23505 = ошибка уникальности (такой email уже есть)
             if (ex.SqlState == "23505") 
                 return BadRequest(new { message = "Такой Email уже занят!" });
             
@@ -65,7 +63,7 @@ public class AuthController : ControllerBase
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
-        // 1. Ищем пользователя по Email в базе данных
+        // 1. Ищем пользователя
         string sql = "SELECT id, username, email, password_hash, role, emeralds FROM users WHERE email = @e";
         
         await using var command = new NpgsqlCommand(sql, connection);
@@ -86,37 +84,43 @@ public class AuthController : ControllerBase
             };
         }
 
-        // 2. Если пользователя нет или пароль не подходит
+        // 2. Проверка пароля
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return BadRequest(new { message = "Неверный email или пароль" });
         }
 
-        // 3. === САМОЕ ВАЖНОЕ: СОЗДАЕМ ТОКЕН (ПРОПУСК) ===
+        // 3. Создаем JWT Токен
         var tokenHandler = new JwtSecurityTokenHandler();
-        // ВАЖНО: Этот ключ должен быть ТАКИМ ЖЕ, как в Program.cs
         var key = Encoding.ASCII.GetBytes("SUPER_SECRET_KEY_12345_MUST_BE_VERY_LONG_STRING"); 
         
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] 
             { 
-                // Зашиваем ID пользователя и Роль внутрь токена
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
                 new Claim(ClaimTypes.Role, user.Role) 
             }),
-            Expires = DateTime.UtcNow.AddDays(7), // Токен действителен 7 дней
+            Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
-        // 4. Отправляем токен и данные обратно на Фронтенд
-        return Ok(new { 
+        // 4. ВОЗВРАЩАЕМ ОТВЕТ (ИСПРАВЛЕНО!)
+        // Фронтенд ждет объект "user", поэтому мы упаковываем данные внутрь него.
+        return Ok(new 
+        { 
+            message = "Вход выполнен!",
             token = tokenString, 
-            username = user.Username,
-            emeralds = user.Emeralds,
-            role = user.Role
+            user = new 
+            {
+                id = user.Id,
+                username = user.Username,
+                email = user.Email,
+                emeralds = user.Emeralds,
+                role = user.Role
+            }
         });
     }
 }
