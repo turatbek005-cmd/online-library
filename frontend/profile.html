@@ -241,17 +241,24 @@
       <h1 class="page-title">Моя полка</h1>
 
       <div class="profile-layout">
-        <!-- Сайдбар -->
+        <!-- Сайдбар с данными пользователя -->
         <div class="profile-sidebar">
           <div class="user-card">
-            <div class="user-avatar">📖</div>
-            <h2>Моя библиотека</h2>
-            <p style="color: var(--text-muted); margin: 0.75rem 0; font-size: 0.95rem; line-height: 1.5;">
-              Всё сохраняется локально в этом браузере. Никакой регистрации не нужно.
-            </p>
-            <div style="background: var(--gold-light); color: var(--accent); font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 20px; display: inline-block; font-size: 0.92rem; margin-top: 0.5rem;">
-              Гостевой режим
+            <div class="user-avatar">👤</div>
+            
+            <!-- 👇 ВАЖНО: Сюда скрипт вставит Имя -->
+            <h2 id="profile-username" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Гость</h2>
+            
+            <!-- 👇 ВАЖНО: Сюда скрипт вставит Email -->
+            <p id="profile-email" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">...</p>
+            
+            <!-- 👇 ВАЖНО: Сюда скрипт вставит Изумруды -->
+            <div style="background: var(--gold-light); color: var(--accent); font-weight: 600; padding: 0.5rem 1rem; border-radius: 20px; display: inline-block; font-size: 0.95rem; margin-bottom: 1rem;">
+              💎 <span id="profile-emeralds">0</span> изумрудов
             </div>
+
+            <!-- 👇 ВАЖНО: Кнопка выхода -->
+            <button id="logoutBtn" class="btn btn-secondary btn-small" style="width: 100%; margin-top: 0.5rem;">Выйти</button>
           </div>
         </div>
 
@@ -312,6 +319,10 @@
     </div>
   </footer>
 
+  <!-- 👇 ВАЖНО: Подключение нашего скрипта для работы с Бэкендом -->
+  <script src="script.js"></script>
+
+  <!-- Внутренний скрипт для анимаций (календарь и книги) оставляем как был -->
   <script>
     // === ИНИЦИАЛИЗАЦИЯ ===
     document.addEventListener('DOMContentLoaded', () => {
