@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using backend.Models;
 using BCrypt.Net; // Подключаем шифровальщик
+using System.Security.Claims;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Controllers;
 
@@ -61,7 +65,7 @@ public class AuthController : ControllerBase
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
-        // 1. Ищем пользователя по Email
+        // 1. Ищем пользователя по Email в базе данных
         string sql = "SELECT id, username, email, password_hash, role, emeralds FROM users WHERE email = @e";
         
         await using var command = new NpgsqlCommand(sql, connection);
@@ -82,17 +86,37 @@ public class AuthController : ControllerBase
             };
         }
 
-        // Если юзера нет ИЛИ пароль не подходит
+        // 2. Если пользователя нет или пароль не подходит
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return BadRequest(new { message = "Неверный email или пароль" });
         }
 
-        // 2. Если всё ок — пускаем (пока просто возвращаем данные юзера)
-        // В следующей серии мы добавим сюда выдачу JWT токена
+        // 3. === САМОЕ ВАЖНОЕ: СОЗДАЕМ ТОКЕН (ПРОПУСК) ===
+        var tokenHandler = new JwtSecurityTokenHandler();
+        // ВАЖНО: Этот ключ должен быть ТАКИМ ЖЕ, как в Program.cs
+        var key = Encoding.ASCII.GetBytes("SUPER_SECRET_KEY_12345_MUST_BE_VERY_LONG_STRING"); 
+        
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[] 
+            { 
+                // Зашиваем ID пользователя и Роль внутрь токена
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+                new Claim(ClaimTypes.Role, user.Role) 
+            }),
+            Expires = DateTime.UtcNow.AddDays(7), // Токен действителен 7 дней
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var tokenString = tokenHandler.WriteToken(token);
+
+        // 4. Отправляем токен и данные обратно на Фронтенд
         return Ok(new { 
-            message = "Успешный вход!", 
-            user = new { user.Id, user.Username, user.Emeralds, user.Role } 
+            token = tokenString, 
+            username = user.Username,
+            emeralds = user.Emeralds,
+            role = user.Role
         });
     }
 }
