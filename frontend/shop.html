@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Магазин карт — Библиотека</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+  <style>
+    /* === СТИЛИ МАГАЗИНА === */
+    .balance-widget {
+      background: linear-gradient(135deg, #1a1a1a, #2d1f1b);
+      border: 1px solid var(--accent-gold);
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      position: fixed;
+      top: 90px;
+      right: 5%;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+    }
+    .emerald-icon { font-size: 1.5rem; filter: drop-shadow(0 0 5px #2e8b57); }
+    .balance-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: var(--accent-gold); }
+
+    .rank-section { margin-bottom: 4rem; }
+    .rank-header {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 2rem; padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+    }
+    .rank-letter { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 700; line-height: 1; }
+    .rank-title { font-size: 1.5rem; color: var(--text); }
+
+    /* ЦВЕТА РАНГОВ */
+    .rank-s .rank-letter { color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+    .rank-a .rank-letter { color: #9b5de5; text-shadow: 0 0 10px rgba(155, 93, 229, 0.4); }
+    .rank-b .rank-letter { color: #00bbf9; }
+    .rank-c .rank-letter { color: #00f5d4; }
+    .rank-d .rank-letter { color: #a8a8a8; }
+    .rank-e .rank-letter { color: #cd7f32; }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+
+    .shop-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .shop-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-hover); }
+
+    .card-image-container {
+      width: 100%;
+      aspect-ratio: 2/3;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      position: relative;
+      border: 2px solid transparent;
+      background: #000; /* Фон если картинка не грузится */
+    }
+    .card-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+    .shop-card:hover .card-image { transform: scale(1.05); }
+
+    /* Рамки */
+    .rank-s .card-image-container { border-color: #ffd700; }
+    .rank-a .card-image-container { border-color: #9b5de5; }
+    .rank-b .card-image-container { border-color: #00bbf9; }
+    .rank-c .card-image-container { border-color: #00f5d4; }
+    .rank-d .card-image-container { border-color: #a8a8a8; }
+    .rank-e .card-image-container { border-color: #cd7f32; }
+
+    .card-info { text-align: center; }
+    .card-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+    
+    .card-price {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-weight: 600; color: var(--text);
+      margin-bottom: 1rem; background: rgba(0,0,0,0.05);
+      padding: 4px 12px; border-radius: 20px; font-size: 0.9rem;
+    }
+
+    .btn-buy {
+      width: 100%; padding: 10px; border: none; border-radius: 8px;
+      background: var(--text); color: white; cursor: pointer; transition: 0.3s;
+    }
+    .btn-buy:hover { background: var(--accent); }
+    
+    .shake { animation: shake 0.5s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="logo">📚 The Book</a>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Главная</a>
+          <a href="catalog.html" class="nav-link">Каталог</a>
+          <a href="shop.html" class="nav-link active">Магазин</a>
+          <a href="profile.html" class="nav-link">Моя полка</a>
+          <a href="login.html" class="nav-link">Войти</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="balance-widget" id="balanceWidget">
+    <span class="emerald-icon">💎</span>
+    <span class="balance-amount" id="userBalance">0</span>
+  </div>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title">Магазин карт</h1>
+      <p style="text-align: center; color: var(--text-muted); margin-bottom: 3rem;">
+        Коллекционные карты. Полный каталог.
+      </p>
+
+      <!-- === РАНГ S (LEGENDARY) === -->
+      <section class="rank-section rank-s">
+        <div class="rank-header"><span class="rank-letter">S</span><span class="rank-title">Легендарные (5000 💎)</span></div>
+        <div class="cards-grid">
+          <!-- Карты S -->
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/leg-rank/S.jpg" class="card-image" alt="S"></div>
+            <div class="card-info"><h3 class="card-name">Властитель Миров</h3><div class="card-price">💎 5000</div><button class="btn-buy" onclick="buyCard(5000, 'Властитель Миров')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/leg-rank/S2.jpg" class="card-image" alt="S2"></div>
+            <div class="card-info"><h3 class="card-name">Звездный Странник</h3><div class="card-price">💎 5000</div><button class="btn-buy" onclick="buyCard(5000, 'Звездный Странник')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/leg-rank/S3.jpg" class="card-image" alt="S3"></div>
+            <div class="card-info"><h3 class="card-name">Магия Света</h3><div class="card-price">💎 5000</div><button class="btn-buy" onclick="buyCard(5000, 'Магия Света')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/leg-rank/S4.jpg" class="card-image" alt="S4"></div>
+            <div class="card-info"><h3 class="card-name">Космический Куб</h3><div class="card-price">💎 5000</div><button class="btn-buy" onclick="buyCard(5000, 'Космический Куб')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/leg-rank/S5.jpg" class="card-image" alt="S5"></div>
+            <div class="card-info"><h3 class="card-name">Гримуар Вечности</h3><div class="card-price">💎 5000</div><button class="btn-buy" onclick="buyCard(5000, 'Гримуар Вечности')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- === РАНГ A (EPIC) === -->
+      <section class="rank-section rank-a">
+        <div class="rank-header"><span class="rank-letter">A</span><span class="rank-title">Эпические (2500 💎)</span></div>
+        <div class="cards-grid">
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/epich-rank/A.jpg" class="card-image" alt="A"></div>
+            <div class="card-info"><h3 class="card-name">Сова Мудрости</h3><div class="card-price">💎 2500</div><button class="btn-buy" onclick="buyCard(2500, 'Сова Мудрости')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/epich-rank/A2.jpg" class="card-image" alt="A2"></div>
+            <div class="card-info"><h3 class="card-name">Куб Пустоты</h3><div class="card-price">💎 2500</div><button class="btn-buy" onclick="buyCard(2500, 'Куб Пустоты')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/epich-rank/A3.jpg" class="card-image" alt="A3"></div>
+            <div class="card-info"><h3 class="card-name">Часы Времени</h3><div class="card-price">💎 2500</div><button class="btn-buy" onclick="buyCard(2500, 'Часы Времени')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/epich-rank/A4.jpg" class="card-image" alt="A4"></div>
+            <div class="card-info"><h3 class="card-name">Артефакт Души</h3><div class="card-price">💎 2500</div><button class="btn-buy" onclick="buyCard(2500, 'Артефакт Души')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/epich-rank/A5.jpg" class="card-image" alt="A5"></div>
+            <div class="card-info"><h3 class="card-name">Кристальный Страж</h3><div class="card-price">💎 2500</div><button class="btn-buy" onclick="buyCard(2500, 'Кристальный Страж')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- === РАНГ B (RARE) === -->
+      <section class="rank-section rank-b">
+        <div class="rank-header"><span class="rank-letter">B</span><span class="rank-title">Редкие (1000 💎)</span></div>
+        <div class="cards-grid">
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/redkie-rank/B.jpg" class="card-image" alt="B"></div>
+            <div class="card-info"><h3 class="card-name">Перо Защиты</h3><div class="card-price">💎 1000</div><button class="btn-buy" onclick="buyCard(1000, 'Перо Защиты')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/redkie-rank/B2.jpg" class="card-image" alt="B2"></div>
+            <div class="card-info"><h3 class="card-name">Щит Доблести</h3><div class="card-price">💎 1000</div><button class="btn-buy" onclick="buyCard(1000, 'Щит Доблести')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/redkie-rank/B3.jpg" class="card-image" alt="B3"></div>
+            <div class="card-info"><h3 class="card-name">Лесной Дух</h3><div class="card-price">💎 1000</div><button class="btn-buy" onclick="buyCard(1000, 'Лесной Дух')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/redkie-rank/B4.jpg" class="card-image" alt="B4"></div>
+            <div class="card-info"><h3 class="card-name">Маг Воды</h3><div class="card-price">💎 1000</div><button class="btn-buy" onclick="buyCard(1000, 'Маг Воды')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- === РАНГ C (UNCOMMON) === -->
+      <section class="rank-section rank-c">
+        <div class="rank-header"><span class="rank-letter">C</span><span class="rank-title">Необычные (500 💎)</span></div>
+        <div class="cards-grid">
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/uncommon/C.jpg" class="card-image" alt="C"></div>
+            <div class="card-info"><h3 class="card-name">Амулет Леса</h3><div class="card-price">💎 500</div><button class="btn-buy" onclick="buyCard(500, 'Амулет Леса')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/uncommon/C2.jpg" class="card-image" alt="C1"></div>
+            <div class="card-info"><h3 class="card-name">Зелье Маны</h3><div class="card-price">💎 500</div><button class="btn-buy" onclick="buyCard(500, 'Зелье Маны')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/uncommon/C3.jpg" class="card-image" alt="C2"></div>
+            <div class="card-info"><h3 class="card-name">Свиток Огня</h3><div class="card-price">💎 500</div><button class="btn-buy" onclick="buyCard(500, 'Свиток Огня')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/uncommon/C4.jpg" class="card-image" alt="C3"></div>
+            <div class="card-info"><h3 class="card-name">Книга Заклинаний</h3><div class="card-price">💎 500</div><button class="btn-buy" onclick="buyCard(500, 'Книга Заклинаний')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- === РАНГ D (COMMON) === -->
+      <section class="rank-section rank-d">
+        <div class="rank-header"><span class="rank-letter">D</span><span class="rank-title">Обычные (200 💎)</span></div>
+        <div class="cards-grid">
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/common/D.jpg" class="card-image" alt="D"></div>
+            <div class="card-info"><h3 class="card-name">Простая Руна</h3><div class="card-price">💎 200</div><button class="btn-buy" onclick="buyCard(200, 'Простая Руна')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/common/D2.jpg" class="card-image" alt="D1"></div>
+            <div class="card-info"><h3 class="card-name">Камень Земли</h3><div class="card-price">💎 200</div><button class="btn-buy" onclick="buyCard(200, 'Камень Земли')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/common/D3.jpg" class="card-image" alt="D2"></div>
+            <div class="card-info"><h3 class="card-name">Осколок Света</h3><div class="card-price">💎 200</div><button class="btn-buy" onclick="buyCard(200, 'Осколок Света')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- === РАНГ E (BASIC) === -->
+      <section class="rank-section rank-e">
+        <div class="rank-header"><span class="rank-letter">E</span><span class="rank-title">Базовые (50 💎)</span></div>
+        <div class="cards-grid">
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/supercommon/E.jpg" class="card-image" alt="E"></div>
+            <div class="card-info"><h3 class="card-name">Старая Бумага</h3><div class="card-price">💎 50</div><button class="btn-buy" onclick="buyCard(50, 'Старая Бумага')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/supercommon/E2.jpg" class="card-image" alt="E1"></div>
+            <div class="card-info"><h3 class="card-name">Обломок</h3><div class="card-price">💎 50</div><button class="btn-buy" onclick="buyCard(50, 'Обломок')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/supercommon/E3.jpg" class="card-image" alt="E2"></div>
+            <div class="card-info"><h3 class="card-name">Древняя Пыль</h3><div class="card-price">💎 50</div><button class="btn-buy" onclick="buyCard(50, 'Древняя Пыль')">Купить</button></div>
+          </div>
+          <div class="shop-card">
+            <div class="card-image-container"><img src="assets/images/card/supercommon/E4.jpg" class="card-image" alt="E3"></div>
+            <div class="card-info"><h3 class="card-name">Пустой Свиток</h3><div class="card-price">💎 50</div><button class="btn-buy" onclick="buyCard(50, 'Пустой Свиток')">Купить</button></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Библиотека «The Book».</p>
+    </div>
+  </footer>
+
+  <script>
+    // === ЛОГИКА ===
+    let balance = parseInt(localStorage.getItem('emeraldBalance')) || 10000;
+    const balanceEl = document.getElementById('userBalance');
+    const widget = document.getElementById('balanceWidget');
+
+    updateBalanceDisplay();
+
+    function updateBalanceDisplay() {
+      balanceEl.textContent = balance;
+      localStorage.setItem('emeraldBalance', balance);
+    }
+
+    // Трюк: чтобы исправить проблему "картинка не показывается",
+    // мы берем URL прямо из браузера (абсолютный путь)
+    function buyCard(price, cardName) {
+      const btn = event.target;
+      const card = btn.closest('.shop-card');
+      const imgElement = card.querySelector('.card-image');
+      
+      // Берем полный путь (http://...) чтобы точно открылось
+      const imgSrc = imgElement.src; 
+      
+      const rankSection = btn.closest('.rank-section');
+      let rank = 'E';
+      if (rankSection.classList.contains('rank-s')) rank = 'S';
+      else if (rankSection.classList.contains('rank-a')) rank = 'A';
+      else if (rankSection.classList.contains('rank-b')) rank = 'B';
+      else if (rankSection.classList.contains('rank-c')) rank = 'C';
+      else if (rankSection.classList.contains('rank-d')) rank = 'D';
+
+      const currentCollection = JSON.parse(localStorage.getItem('userCards') || '[]');
+      if(currentCollection.some(c => c.name === cardName)) {
+          alert('Эта карта уже есть в вашей коллекции!');
+          return;
+      }
+
+      if (balance >= price) {
+        balance -= price;
+        updateBalanceDisplay();
+        
+        widget.style.borderColor = '#2e8b57';
+        setTimeout(() => widget.style.borderColor = 'var(--accent-gold)', 500);
+        
+        saveCardToCollection(cardName, imgSrc, rank);
+        
+        alert(`Поздравляем! Артефакт "${cardName}" добавлен в коллекцию.`);
+      } else {
+        alert('Недостаточно изумрудов!');
+        widget.classList.add('shake');
+        setTimeout(() => widget.classList.remove('shake'), 500);
+      }
+    }
+
+    function saveCardToCollection(name, image, rank) {
+      const collection = JSON.parse(localStorage.getItem('userCards') || '[]');
+      collection.push({ name, image, rank, date: new Date().toLocaleDateString() });
+      localStorage.setItem('userCards', JSON.stringify(collection));
+    }
+  </script>
+</body>
+</html>

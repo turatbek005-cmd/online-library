@@ -4,221 +4,261 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Моя полка — Библиотека</title>
-  <link rel="stylesheet" href="css/main.css" />
+  
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Подключаем твои стили -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+
+  
   <style>
-    /* === ОБЩИЕ СТИЛИ ПРОФИЛЯ === */
+    /* === СТИЛИ ДЛЯ ПРОФИЛЯ === */
     .profile-layout {
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: 320px 1fr;
       gap: 2.5rem;
-      margin: 2rem 0;
+      margin-top: 2rem;
     }
 
-    .user-card {
+    /* Карточка пользователя (Слева) */
+    .profile-sidebar .user-card {
+      position: sticky;
+      top: 100px; /* Чтобы ехала за скроллом */
       background: var(--surface);
-      padding: 2rem;
-      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      border-radius: 20px;
       text-align: center;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
 
-    .user-avatar {
-      font-size: 3.2rem;
-      margin-bottom: 1.25rem;
-      color: var(--accent);
+    /* КОЛЛЕКЦИЯ КАРТ */
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
     }
 
+    .collection-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 2/3; /* Пропорции карты */
+      border: 2px solid transparent;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .collection-item:hover {
+      transform: scale(1.1);
+      z-index: 10;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .collection-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Рамки рангов */
+    .border-S { border-color: #9b5de5; box-shadow: 0 0 10px rgba(155, 93, 229, 0.5); }
+    .border-B { border-color: #00bbf9; }
+    .border-E { border-color: #9a8c82; }
+    
+    .collection-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 2rem;
+        background: var(--surface-alt);
+        border-radius: 12px;
+        border: 1px dashed var(--border);
+    }
+
+    .user-avatar {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1.5rem;
+      background: var(--surface-alt);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 15px var(--accent-light);
+    }
+
+    .user-card h2 {
+      font-size: 1.8rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .user-card .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--accent-gold);
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      margin-top: 1rem;
+    }
+
+    /* Основной контент (Справа) */
     .section {
-      margin-bottom: 2.75rem;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
     }
 
     .section-title {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
       color: var(--text);
-      font-family: 'Cormorant Garamond', serif;
-      position: relative;
-      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-
+    
     .section-title::after {
       content: '';
-      display: block;
-      width: 40px;
-      height: 2px;
-      background: var(--gold);
-      margin-top: 0.5rem;
-      border-radius: 1px;
+      flex: 1;
+      height: 1px;
+      background: rgba(139, 69, 19, 0.2);
     }
 
-    /* === КНИГИ И ИСТОРИЯ === */
+    /* СПИСОК КНИГ (ОБНОВЛЕННЫЙ ДИЗАЙН) */
     .book-item {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 1.25rem 0;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .book-item:last-child {
-      border-bottom: none;
-    }
-
-    .book-meta h4 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      color: var(--text);
-    }
-
-    .book-meta p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin: 0.2rem 0;
-    }
-
-    .book-date {
-      color: var(--text-light);
-      font-size: 0.9rem;
-      font-style: italic;
-    }
-
-    /* === ПУСТЫЕ СОСТОЯНИЯ === */
-    .empty-state {
-      text-align: center;
-      padding: 2.5rem 1.5rem;
+      gap: 1.5rem;
+      padding: 1.5rem;
       background: var(--surface-alt);
-      border-radius: 18px;
-      margin: 1.5rem 0;
-      border: 1px dashed var(--border);
-    }
-
-    .empty-icon {
-      font-size: 3.5rem;
-      margin-bottom: 1.25rem;
-      color: var(--accent);
-      line-height: 1;
-    }
-
-    .empty-state h3 {
-      font-size: 1.4rem;
-      margin-bottom: 0.75rem;
-      color: var(--text);
-      font-family: 'Cormorant Garamond', serif;
-    }
-
-    .empty-state p {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      line-height: 1.6;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    /* === ЗАМЕТКИ === */
-    .note-card {
-      background: var(--surface);
       border-radius: 16px;
-      padding: 1.6rem;
-      margin-bottom: 1.4rem;
-      border-left: 4px solid var(--accent);
-      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .note-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.8rem;
+    .book-item:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-light);
     }
 
-    .note-title {
-      font-weight: 600;
-      font-size: 1.15rem;
-      color: var(--text);
-    }
-
-    .note-date {
-      color: var(--text-light);
-      font-size: 0.9rem;
-    }
-
-    .note-quote {
-      font-style: italic;
-      color: var(--text);
-      margin: 0.75rem 0;
-      line-height: 1.6;
-      font-size: 1.05rem;
-    }
-
-    .note-text {
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .note-author {
-      color: var(--text-light);
-      font-size: 0.95rem;
-      margin-top: 0.8rem;
-      font-style: italic;
-    }
-
-    /* === КАЛЕНДАРЬ === */
-    .calendar-container {
-      background: var(--surface);
-      padding: 1.75rem;
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-
-    #readingCalendar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      justify-content: center;
-      margin: 1.25rem 0;
-      padding: 0.5rem;
-    }
-
-    .calendar-day {
-      width: 30px;
-      height: 30px;
+    .book-item-icon {
+      font-size: 3rem;
+      min-width: 80px;
+      height: 100px;
+      background: #e8e6e1;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
-      font-weight: normal;
-      transition: transform 0.2s ease;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
     }
 
-    .calendar-day:hover {
-      transform: scale(1.15);
+    .book-item-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .calendar-day.today {
-      font-weight: bold;
-      border: 2px solid var(--accent);
+    .book-item-info h4 {
+      font-size: 1.3rem;
+      color: var(--text);
+      margin-bottom: 0.3rem;
     }
 
-    #streakInfo {
+    .book-item-info p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .book-item-date {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+    }
+
+    /* КНОПКИ ДЕЙСТВИЙ */
+    .book-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.8rem;
+      min-width: 140px;
+    }
+    
+    /* Спец. стиль для кнопки чтения */
+    .btn-read {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background: var(--accent); /* Коричневый */
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
       font-weight: 600;
-      color: var(--accent);
-      font-size: 1.1rem;
-      margin-top: 0.75rem;
+      transition: all 0.3s;
+      border: 1px solid var(--accent);
+    }
+    
+    .btn-read:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2);
     }
 
-    /* === АДАПТИВНОСТЬ === */
-    @media (max-width: 768px) {
-      .profile-layout {
-        grid-template-columns: 1fr;
-      }
+    /* СТИЛИ ДЛЯ ИСТОРИИ И ЗАМЕТОК */
+    .history-item {
+      padding: 1rem;
+      border-bottom: 1px dashed rgba(139, 69, 19, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .note-card {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border-left: 4px solid var(--accent-gold);
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
 
-      .user-card {
-        margin-bottom: 1.5rem;
-      }
+    /* КАЛЕНДАРЬ */
+    .calendar-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #readingCalendar { display: flex; flex-wrap: wrap; gap: 6px; max-width: 400px; justify-content: center; }
+    .calendar-day {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    /* АДАПТИВНОСТЬ */
+    @media (max-width: 900px) {
+      .profile-layout { grid-template-columns: 1fr; }
+      .profile-sidebar .user-card { position: static; margin-bottom: 2rem; }
+      .book-item { flex-direction: column; align-items: center; text-align: center; }
+      .book-actions { width: 100%; flex-direction: row; }
     }
   </style>
 </head>
@@ -231,76 +271,74 @@
           <a href="index.html" class="nav-link">Главная</a>
           <a href="catalog.html" class="nav-link">Каталог</a>
           <a href="profile.html" class="nav-link active">Моя полка</a>
+          <a href="login.html" class="nav-link">Войти</a>
+          <a href="shop.html" class="nav-link">Магазин</a>
         </nav>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- СЕКЦИЯ 4: КОЛЛЕКЦИЯ -->
+          <section class="section">
+            <h2 class="section-title">🎒 Моя коллекция</h2>
+            <div id="collectionContainer">
+               <!-- Сюда попадут карты через JS -->
+            </div>
+          </section>
     <div class="container">
-      <h1 class="page-title">Моя полка</h1>
+      <h1 class="page-title">Личный кабинет</h1>
 
       <div class="profile-layout">
-        <!-- Сайдбар -->
-        <div class="profile-sidebar">
+        
+        <!-- ЛЕВАЯ КОЛОНКА -->
+        <aside class="profile-sidebar">
           <div class="user-card">
-            <div class="user-avatar">📖</div>
-            <h2>Моя библиотека</h2>
-            <p style="color: var(--text-muted); margin: 0.75rem 0; font-size: 0.95rem; line-height: 1.5;">
-              Всё сохраняется локально в этом браузере. Никакой регистрации не нужно.
-            </p>
-            <div style="background: var(--gold-light); color: var(--accent); font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 20px; display: inline-block; font-size: 0.92rem; margin-top: 0.5rem;">
-              Гостевой режим
+            <div class="user-avatar">🧙‍♂️</div>
+            <h2>Студент</h2>
+            <p style="color: var(--text-muted);">Читатель</p>
+            <div class="badge">Гостевой режим</div>
+            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+               <p style="font-size: 0.9rem; color: var(--text-light);">Ваши книги хранятся в браузере</p>
             </div>
           </div>
-        </div>
+        </aside>
 
-        <!-- Основной контент -->
+        <!-- ПРАВАЯ КОЛОНКА -->
         <div class="profile-content">
-          <!-- Текущие книги -->
+          
+          <!-- СЕКЦИЯ 1: ЧИТАЮ СЕЙЧАС -->
           <section class="section">
-            <h2 class="section-title">Сейчас читаю</h2>
+            <h2 class="section-title">📖 Сейчас на полке</h2>
             <div id="borrowedBooksList"></div>
-            <div id="noBooksMessage" class="empty-state" style="display: none;">
-              <div class="empty-icon">📚</div>
-              <h3>Пока пусто</h3>
-              <p>Возьмите первую книгу в каталоге — она появится здесь!</p>
+            
+            <!-- Пустое состояние -->
+            <div id="noBooksMessage" style="text-align: center; padding: 2rem; display: none;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🍂</div>
+              <h3 style="margin-bottom: 0.5rem; color: var(--text);">Полка пуста</h3>
+              <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Выберите книгу в каталоге, чтобы начать чтение</p>
+              <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
             </div>
           </section>
 
-          <!-- История чтения -->
+          <!-- СЕКЦИЯ 2: ИСТОРИЯ -->
           <section class="section">
-            <h2 class="section-title">История чтения</h2>
+            <h2 class="section-title">📜 История возвратов</h2>
             <div id="historyList"></div>
-            <div id="noHistoryMessage" class="empty-state" style="display: none;">
-              <div class="empty-icon">📜</div>
-              <h3>История пуста</h3>
-              <p>Когда вы вернёте книгу, она появится в истории чтения.</p>
+            <div id="noHistoryMessage" style="text-align: center; color: var(--text-light); display: none;">
+              История пока пуста
             </div>
           </section>
 
-          <!-- Заметки -->
+          <!-- СЕКЦИЯ 3: КАЛЕНДАРЬ -->
           <section class="section">
-            <h2 class="section-title">Мои заметки</h2>
-            <div id="notesList"></div>
-            <div id="noNotesMessage" class="empty-state" style="display: none;">
-              <div class="empty-icon">✍️</div>
-              <h3>Нет заметок</h3>
-              <p>Добавьте цитату или мысль — они будут храниться здесь.</p>
-            </div>
-          </section>
-
-          <!-- Читательский календарь -->
-          <section class="section">
-            <h2 class="section-title">Читательский календарь</h2>
-            <div class="calendar-container">
-              <p style="color: var(--text-muted); margin-bottom: 1rem;">
-                Золотые дни — вы взаимодействовали с библиотекой
-              </p>
+            <h2 class="section-title">🔥 Читательская активность</h2>
+            <div class="calendar-wrapper">
               <div id="readingCalendar"></div>
-              <div id="streakInfo"></div>
             </div>
+            <div id="streakInfo" style="text-align: center; margin-top: 1rem; font-weight: 600; color: var(--accent);"></div>
           </section>
+
         </div>
       </div>
     </div>
@@ -308,26 +346,22 @@
 
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2025 Библиотека «The Book». Ваши данные — только у вас.</p>
+      <p>&copy; 2025 Библиотека «The Book».</p>
     </div>
   </footer>
 
   <script>
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    document.addEventListener('DOMContentLoaded', () => {
-      addReadingDay();
-      renderCalendar();
-      renderAllSections();
-    });
+    // === ВАЖНО: ИМИТАЦИЯ ДАННЫХ ===
+    // Твой друг-бэкендер передаст реальные ссылки в базе. 
+    // Пока мы добавим их сюда вручную, чтобы кнопка работала.
+    const urlMap = {
+      "master": "https://ilibrary.ru/text/69/p.1/index.html", // Мастер и Маргарита (пример ссылки)
+      "crime": "https://ilibrary.ru/text/69/p.1/index.html",
+      "1984": "https://ru.wikipedia.org/wiki/1984_(роман)",
+      "war": "https://ru.wikipedia.org/wiki/Война_и_мир"
+    };
 
-    // === РЕНДЕР ВСЕХ СЕКЦИЙ ===
-    function renderAllSections() {
-      renderBorrowedBooks();
-      renderHistory();
-      renderNotes();
-    }
-
-    // === ВЗЯТЫЕ КНИГИ ===
+    // --- РЕНДЕР КНИГ НА ПОЛКЕ ---
     function renderBorrowedBooks() {
       const list = document.getElementById('borrowedBooksList');
       const empty = document.getElementById('noBooksMessage');
@@ -340,103 +374,75 @@
       }
       
       empty.style.display = 'none';
-      list.innerHTML = books.map(book => `
+      
+      list.innerHTML = books.map(book => {
+        // Если ссылка есть в книге - берем её, если нет - берем из нашего списка urlMap, если нет - ставим заглушку
+        const fileUrl = book.file_url || urlMap[book.id] || '#';
+        
+        // ВОТ ЗДЕСЬ КОД ТВОЕГО ДРУГА ВСТАВЛЕН ВНУТРЬ
+        return `
         <div class="book-item">
-          <div class="book-meta">
+          <div class="book-item-icon">📖</div>
+          <div class="book-item-info">
             <h4>${book.title}</h4>
             <p>${book.author}</p>
-            <p class="book-date">Взята: ${book.date}</p>
+            <p class="book-item-date">Взята: ${book.date}</p>
           </div>
-          <button class="btn btn-secondary btn-small" style="align-self: center;" onclick="returnBook('${book.id}')">Вернуть</button>
+          <div class="book-actions">
+            
+            <!-- Кнопка друга для чтения -->
+            <a href="${fileUrl}" target="_blank" rel="noreferrer" class="btn-read">
+              Читать
+            </a>
+
+            <!-- Кнопка возврата -->
+            <button class="btn btn-secondary btn-small" onclick="returnBook('${book.id}')">
+              Вернуть
+            </button>
+          </div>
         </div>
-      `).join('');
+      `}).join('');
     }
 
-    // === ИСТОРИЯ ===
+    // --- ФУНКЦИЯ ВОЗВРАТА ---
+    function returnBook(bookId) {
+      const books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+      const book = books.find(b => b.id === bookId);
+      if (!book) return;
+
+      const updatedBooks = books.filter(b => b.id !== bookId);
+      localStorage.setItem('borrowedBooks', JSON.stringify(updatedBooks));
+
+      // Добавляем в историю
+      const history = JSON.parse(localStorage.getItem('readingHistory') || '[]');
+      history.push({ id: book.id, title: book.title, date: new Date().toLocaleDateString('ru-RU') });
+      localStorage.setItem('readingHistory', JSON.stringify(history));
+
+      renderAllSections();
+    }
+
+    // --- ИСТОРИЯ ---
     function renderHistory() {
       const list = document.getElementById('historyList');
       const empty = document.getElementById('noHistoryMessage');
       let history = JSON.parse(localStorage.getItem('readingHistory') || '[]');
-      
+
       if (history.length === 0) {
         list.innerHTML = '';
         empty.style.display = 'block';
         return;
       }
-      
       empty.style.display = 'none';
-      history = history.sort((a, b) => new Date(b.date) - new Date(a.date));
-      list.innerHTML = history.map(item => `
-        <div class="book-item">
-          <div class="book-meta">
-            <h4>${item.title}</h4>
-            <p class="book-date">Прочитано: ${item.date}</p>
-          </div>
+      
+      list.innerHTML = history.reverse().slice(0, 5).map(item => `
+        <div class="history-item">
+          <span style="font-weight: 500; color: var(--text);">${item.title}</span>
+          <span style="font-size: 0.85rem; color: var(--text-light);">${item.date}</span>
         </div>
       `).join('');
     }
 
-    // === ЗАМЕТКИ ===
-    function renderNotes() {
-      const list = document.getElementById('notesList');
-      const empty = document.getElementById('noNotesMessage');
-      let notes = JSON.parse(localStorage.getItem('bookNotes') || '[]');
-      
-      if (notes.length === 0) {
-        list.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-      
-      empty.style.display = 'none';
-      notes = notes.sort((a, b) => new Date(b.date) - new Date(a.date));
-      list.innerHTML = notes.map(note => `
-        <div class="note-card">
-          <div class="note-header">
-            <div class="note-title">"${note.bookTitle}"</div>
-            <div class="note-date">${note.date}</div>
-          </div>
-          ${note.quote ? `<div class="note-quote">«${note.quote}»</div>` : ''}
-          ${note.note ? `<div class="note-text">${note.note}</div>` : ''}
-          <div class="note-author">— ${note.bookAuthor}</div>
-        </div>
-      `).join('');
-    }
-
-    // === ВОЗВРАТ КНИГИ ===
-    function returnBook(bookId) {
-      const books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
-      const book = books.find(b => b.id === bookId);
-      
-      if (!book) return;
-      
-      // Удаляем из взятых
-      const updatedBooks = books.filter(b => b.id !== bookId);
-      localStorage.setItem('borrowedBooks', JSON.stringify(updatedBooks));
-      
-      // Добавляем в историю
-      const history = JSON.parse(localStorage.getItem('readingHistory') || '[]');
-      history.push({
-        id: book.id,
-        title: book.title,
-        date: new Date().toLocaleDateString('ru-RU')
-      });
-      localStorage.setItem('readingHistory', JSON.stringify(history));
-      
-      renderAllSections();
-      alert(`«${book.title}» успешно возвращена и добавлена в историю.`);
-    }
-
-    // === КАЛЕНДАРЬ ===
-    function addReadingDay() {
-      const days = JSON.parse(localStorage.getItem('readingDays') || '[]');
-      const today = new Date().toISOString().split('T')[0];
-      if (!days.includes(today)) {
-        days.push(today);
-        localStorage.setItem('readingDays', JSON.stringify(days));
-      }
-    }
-
+    // --- КАЛЕНДАРЬ ---
     function renderCalendar() {
       const container = document.getElementById('readingCalendar');
       const streakEl = document.getElementById('streakInfo');
@@ -444,55 +450,87 @@
       const daySet = new Set(days);
       
       const today = new Date();
-      const cells = [];
-      let currentStreak = 0;
-      let tempStreak = 0;
+      let html = '';
+      let streak = 0;
       
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(today.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
+      // Рисуем последние 28 дней
+      for (let i = 27; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const isRead = daySet.has(dateStr);
         const isToday = i === 0;
-        const read = daySet.has(dateStr);
         
-        if (read) {
-          tempStreak++;
-          if (i === 0) currentStreak = tempStreak;
-        } else {
-          tempStreak = 0;
-        }
+        if (isRead) streak++; else streak = 0;
+
+        const color = isRead ? 'var(--status-available)' : 'var(--border)';
+        const border = isToday ? '2px solid var(--accent)' : 'none';
         
-        const day = date.getDate();
-        const color = read 
-          ? (isToday ? '#2a9d8f' : '#d4af37')
-          : '#eae7dc';
-        const textColor = read ? 'white' : '#9a8c82';
-        const fontWeight = isToday ? 'bold' : 'normal';
-        const border = isToday ? '2px solid #2a9d8f' : 'none';
-        
-        cells.push(`
-          <div class="calendar-day" 
-               title="${dateStr}"
-               style="background: ${color}; color: ${textColor}; font-weight: ${fontWeight}; border: ${border};">
-            ${day}
-          </div>
-        `);
+        html += `<div class="calendar-day" style="background: ${color}; color: white; border: ${border}" title="${dateStr}">
+          ${d.getDate()}
+        </div>`;
       }
-      
-      container.innerHTML = cells.join('');
-      streakEl.textContent = currentStreak > 0 
-        ? `🔥 Вы взаимодействуете с библиотекой ${currentStreak} ${getDayWord(currentStreak)} подряд!` 
-        : 'Начните сегодня — добавьте заметку или возьмите книгу!';
+      container.innerHTML = html;
+      streakEl.textContent = streak > 0 ? `🔥 Серия: ${streak} дн.` : 'Начни читать сегодня!';
     }
 
-    function getDayWord(n) {
-      n = n % 100;
-      if (n >= 11 && n <= 19) return 'дней';
-      const lastDigit = n % 10;
-      if (lastDigit === 1) return 'день';
-      if (lastDigit >= 2 && lastDigit <= 4) return 'дня';
-      return 'дней';
+    // --- ЗАПУСК ---
+    function renderAllSections() {
+      renderBorrowedBooks();
+      renderHistory();
+      renderCalendar();
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Отмечаем вход сегодня
+      const days = JSON.parse(localStorage.getItem('readingDays') || '[]');
+      const today = new Date().toISOString().split('T')[0];
+      if (!days.includes(today)) {
+        days.push(today);
+        localStorage.setItem('readingDays', JSON.stringify(days));
+      }
+      
+      renderAllSections();
+    });
+
+    // --- РЕНДЕР КОЛЛЕКЦИИ ---
+    function renderCollection() {
+      const container = document.getElementById('collectionContainer');
+      // Достаем карты из памяти
+      const cards = JSON.parse(localStorage.getItem('userCards') || '[]');
+
+      if (cards.length === 0) {
+        container.innerHTML = `
+            <div class="collection-empty">
+                <p>У вас пока нет карт.</p>
+                <a href="shop.html" style="color: var(--accent); font-weight: bold;">Перейти в магазин</a>
+            </div>
+        `;
+        return;
+      }
+
+      // Если карты есть, рисуем сетку
+      let html = '<div class="collection-grid">';
+      
+      cards.forEach(card => {
+        html += `
+            <div class="collection-item border-${card.rank}" title="${card.name} (Ранг ${card.rank})">
+                <img src="${card.image}" alt="${card.name}">
+            </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+    
+    function renderAllSections() {
+      renderBorrowedBooks();
+      renderHistory();
+      renderCalendar();
+      renderCollection(); // <--- ДОБАВИЛИ ЭТУ СТРОЧКУ
+    }
+    // Не забудь добавить вызов функции в renderAllSections!
   </script>
 </body>
 </html>
