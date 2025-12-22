@@ -1,72 +1,72 @@
-/* === МОБИЛЬНЫЕ УСТРОЙСТВА (до 768px) === */
-@media (max-width: 768px) {
-  body {
-    background-attachment: scroll; /* Отключаем параллакс на мобильных */
+  /* === МОБИЛЬНЫЕ УСТРОЙСТВА (до 768px) === */
+  @media (max-width: 768px) {
+    body {
+      background-attachment: scroll; /* Отключаем параллакс на мобильных */
+    }
+    
+    .header-content {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .nav {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+    
+    .nav-link {
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+    }
+    
+    .hero {
+      padding: 4rem 0 3rem;
+    }
+    
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    
+    .hero-text {
+      font-size: 1.15rem;
+    }
+    
+    .books-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .book-card {
+      padding: 1.5rem;
+    }
+    
+    .book-cover {
+      height: 200px;
+    }
+    
+    main {
+      padding: 2rem;
+      margin: 1.5rem;
+    }
   }
-  
-  .header-content {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
-  }
-  
-  .nav-link {
-    padding: 0.5rem 1rem;
-    font-size: 0.95rem;
-  }
-  
-  .hero {
-    padding: 4rem 0 3rem;
-  }
-  
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  
-  .hero-text {
-    font-size: 1.15rem;
-  }
-  
-  .books-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
-  .book-card {
-    padding: 1.5rem;
-  }
-  
-  .book-cover {
-    height: 200px;
-  }
-  
-  main {
-    padding: 2rem;
-    margin: 1.5rem;
-  }
-}
 
-/* === ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (до 480px) === */
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 2rem;
+  /* === ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (до 480px) === */
+  @media (max-width: 480px) {
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .search-bar {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+    }
   }
-  
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .search-bar {
-    flex-direction: column;
-  }
-  
-  .btn {
-    width: 100%;
-  }
-}

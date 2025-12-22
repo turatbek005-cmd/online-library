@@ -70,41 +70,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- ВХОД (LOGIN) ---
     const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            console.log("Отправляем запрос на вход:", email);
+    // В файле script.js (найди блок loginForm)
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-            try {
-                const response = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+            const data = await response.json();
 
-                const data = await response.json();
-                console.log("Ответ сервера:", data); 
-
-                if (response.ok) {
-                    if (!data.user) {
-                        alert("Ошибка: Сервер не вернул данные пользователя!");
-                        return;
-                    }
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    console.log("Данные сохранены, переходим в профиль...");
-                    window.location.href = "profile.html";
-                } else {
-                    alert("Ошибка: " + (data.message || "Неверные данные"));
-                }
-            } catch (error) {
-                console.error("Ошибка сети:", error);
-                alert("Ошибка подключения! Бэкенд запущен?");
+            if (response.ok) {
+                // ВАЖНО: сохраняем токен и пользователя отдельно
+                localStorage.setItem('token', data.token); 
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                console.log("Токен сохранен:", data.token); // Для проверки в консоли
+                alert("Вход выполнен!");
+                window.location.href = "profile.html";
+            } else {
+                alert(data.message || "Ошибка входа");
             }
-        });
-    }
+        } catch (error) {
+            console.error(error);
+            alert("Ошибка связи с сервером");
+        }
+    });
+}
 
     // --- ПРОФИЛЬ (Загрузка данных) ---
     if (window.location.pathname.includes('profile.html')) {
