@@ -7,13 +7,11 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- ПРАВИЛЬНЫЕ ПУТИ К CSS -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   
   <style>
-    /* Дополнительные стили конкретно для профиля */
     .profile-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -21,49 +19,56 @@
       margin-top: 2rem;
     }
     
-    /* Сайдбар */
     .profile-sidebar .user-card {
-      background: var(--surface, #252525);
+      background: var(--surface);
       padding: 2rem;
       border-radius: 20px;
       text-align: center;
-      border: 1px solid var(--border, #333);
+      border: 1px solid var(--border);
       position: sticky;
       top: 100px;
     }
     
-    .user-avatar {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
+    .user-avatar { font-size: 4rem; margin-bottom: 1rem; }
 
-    /* Секции */
     .section {
-      background: var(--surface, #252525);
+      background: var(--surface);
       padding: 2rem;
       border-radius: 20px;
       margin-bottom: 2rem;
-      border: 1px solid var(--border, #333);
+      border: 1px solid var(--border);
     }
 
-    /* Сетка для коллекции карт */
     .collection-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 1rem;
     }
+
     .collection-item {
         aspect-ratio: 2/3;
-        background: #333;
-        border-radius: 8px;
+        background: #1a1a1a;
+        border-radius: 12px;
         overflow: hidden;
         border: 2px solid transparent;
         transition: transform 0.2s;
+        position: relative;
     }
     .collection-item:hover { transform: scale(1.05); }
     .collection-item img { width: 100%; height: 100%; object-fit: cover; }
     
-    /* Календарь */
+    .rank-tag {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        padding: 2px 0;
+    }
+
     .calendar-wrapper { display: flex; justify-content: center; }
     #readingCalendar { display: flex; gap: 5px; flex-wrap: wrap; max-width: 350px; justify-content: center; }
     .calendar-day { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
@@ -95,12 +100,10 @@
 
       <div class="profile-layout">
         
-        <!-- ЛЕВАЯ КОЛОНКА (САЙДБАР) -->
+        <!-- ЛЕВАЯ КОЛОНКА -->
         <aside class="profile-sidebar">
           <div class="user-card">
             <div class="user-avatar">👤</div>
-            
-            <!-- ДИНАМИЧЕСКИЕ ДАННЫЕ (JS заменит текст) -->
             <h2 id="profile-username" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">Загрузка...</h2>
             <p id="profile-email" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">...</p>
             
@@ -108,26 +111,20 @@
               💎 <span id="profile-emeralds">0</span>
             </div>
 
-            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-               <p style="font-size: 0.85rem; color: var(--text-light);">Статус: Читатель</p>
-            </div>
-
-            <button id="logoutBtn" class="btn btn-secondary btn-full" style="margin-top: 1rem;">Выйти</button>
+            <button id="logoutBtn" class="btn btn-secondary btn-full" style="margin-top: 2rem;">Выйти</button>
           </div>
         </aside>
 
-        <!-- ПРАВАЯ КОЛОНКА (КОНТЕНТ) -->
+        <!-- ПРАВАЯ КОЛОНКА -->
         <div class="profile-content">
           
-          <!-- КОЛЛЕКЦИЯ -->
           <section class="section">
             <h2 class="section-title">🎒 Моя коллекция</h2>
             <div id="collectionContainer">
-                <p style="color: var(--text-muted);">Здесь будут ваши карты...</p>
+                <p style="color: var(--text-muted);">Синхронизация артефактов...</p>
             </div>
           </section>
 
-          <!-- КНИГИ -->
           <section class="section">
             <h2 class="section-title">📖 Читаю сейчас</h2>
             <div id="borrowedBooksList"></div>
@@ -137,19 +134,11 @@
             </div>
           </section>
 
-          <!-- ИСТОРИЯ -->
-          <section class="section">
-            <h2 class="section-title">📜 История</h2>
-            <div id="historyList"></div>
-          </section>
-
-          <!-- КАЛЕНДАРЬ -->
           <section class="section">
             <h2 class="section-title">🔥 Активность</h2>
             <div class="calendar-wrapper">
               <div id="readingCalendar"></div>
             </div>
-            <div id="streakInfo" style="text-align: center; margin-top: 1rem; color: var(--accent);"></div>
           </section>
 
         </div>
@@ -163,78 +152,125 @@
     </div>
   </footer>
 
-  <!-- ПОДКЛЮЧАЕМ ВНЕШНИЙ СКРИПТ (Логин, Регистрация, Профиль) -->
-  <script src="script.js"></script>
-
-  <!-- ВНУТРЕННИЙ СКРИПТ (Списки книг, Календарь, Коллекция) -->
   <script>
-    // --- РЕНДЕР КНИГ, КОЛЛЕКЦИИ И КАЛЕНДАРЯ ---
-    function renderAllSections() {
-      // 1. КНИГИ
-      const books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
-      const list = document.getElementById('borrowedBooksList');
-      const empty = document.getElementById('noBooksMessage');
-      
-      if (books.length === 0) {
-          list.innerHTML = '';
-          if(empty) empty.style.display = 'block';
-      } else {
-          if(empty) empty.style.display = 'none';
-          list.innerHTML = books.map(b => `
-            <div style="background:var(--surface-alt); padding:1rem; margin-bottom:1rem; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
-                <div>
-                    <strong style="font-size:1.1rem;">${b.title}</strong><br>
-                    <small style="color: var(--text-muted);">${b.author}</small>
-                </div>
-                <button onclick="returnBook('${b.id}')" class="btn btn-secondary btn-small">Вернуть</button>
-            </div>`).join('');
-      }
+    const API_URL = "http://localhost:5283/api";
 
-      // 2. КАЛЕНДАРЬ
-      const days = JSON.parse(localStorage.getItem('readingDays') || '[]');
-      const calendar = document.getElementById('readingCalendar');
-      let html = '';
-      const today = new Date();
-      for(let i=27; i>=0; i--) {
-          const d = new Date(); d.setDate(today.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
-          const active = days.includes(dateStr);
-          html += `<div class="calendar-day" style="background:${active ? '#d4af37' : '#333'}; color:${active?'#000':'#777'}">${d.getDate()}</div>`;
-      }
-      if(calendar) calendar.innerHTML = html;
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token');
 
-      // 3. КОЛЛЕКЦИЯ (Пока заглушка, если нет данных)
-      const collectionContainer = document.getElementById('collectionContainer');
-      const cards = JSON.parse(localStorage.getItem('userCards') || '[]');
-      
-      if (cards.length > 0) {
-          let cardHtml = '<div class="collection-grid">';
-          cards.forEach(card => {
-             // Используем картинки из твоего дерева файлов
-             cardHtml += `
-             <div class="collection-item" style="border-color: ${getRankColor(card.rank)}">
-                <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="Card">
-             </div>`;
-          });
-          cardHtml += '</div>';
-          collectionContainer.innerHTML = cardHtml;
-      }
+        if (!user || !token) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Заполняем профиль из памяти
+        document.getElementById('profile-username').innerText = user.username;
+        document.getElementById('profile-email').innerText = user.email;
+        document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
+
+        // Грузим данные с сервера
+        loadUserCollection(token);
+        renderBorrowedBooks(token);
+        renderCalendar();
+    });
+
+    // 1. ЗАГРУЗКА КАРТ (БД)
+    async function loadUserCollection(token) {
+        const container = document.getElementById('collectionContainer');
+        try {
+            const response = await fetch(`${API_URL}/shop/my-cards`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const cards = await response.json();
+            if (cards.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Коллекция пуста.</p>';
+                return;
+            }
+            container.innerHTML = `<div class="collection-grid">${cards.map(card => `
+                <div class="collection-item" style="border-color: ${getRankColor(card.rank)}">
+                    <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="${card.name}">
+                    <div class="rank-tag">${card.rank}</div>
+                </div>`).join('')}</div>`;
+        } catch (err) {
+            container.innerHTML = '<p style="color:red;">Ошибка загрузки карт.</p>';
+        }
     }
 
     function getRankColor(rank) {
-        if(rank === 'S') return '#ffd700'; // Gold
-        if(rank === 'A') return '#c0c0c0'; // Silver
-        return 'transparent';
+        const colors = { 'S': '#ffd700', 'A': '#9b5de5', 'B': '#00bbf9', 'C': '#00f5d4', 'D': '#a8a8a8', 'E': '#cd7f32' };
+        return colors[rank.toUpperCase()] || 'transparent';
     }
 
-    function returnBook(id) {
-        let books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
-        books = books.filter(b => b.id !== id);
-        localStorage.setItem('borrowedBooks', JSON.stringify(books));
-        renderAllSections();
+    // 2. ЗАГРУЗКА КНИГ (БД)
+    async function renderBorrowedBooks(token) {
+        const list = document.getElementById('borrowedBooksList');
+        const empty = document.getElementById('noBooksMessage');
+
+        try {
+            const response = await fetch(`${API_URL}/library/my-books`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const books = await response.json();
+
+            if (books.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            list.innerHTML = books.map(b => `
+                <div style="background:rgba(255,255,255,0.05); padding:1.5rem; margin-bottom:1rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
+                    <div>
+                        <strong style="font-size:1.2rem; color:var(--text);">${b.title}</strong><br>
+                        <span style="color:var(--text-muted);">${b.author}</span>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${b.fileUrl ? `<a href="${b.fileUrl}" target="_blank" class="btn btn-primary btn-small">Читать</a>` : ''}
+                        <button onclick="handleReturn(${b.id})" class="btn btn-secondary btn-small">Вернуть</button>
+                    </div>
+                </div>`).join('');
+        } catch (err) {
+            list.innerHTML = '<p style="color:red;">Не удалось загрузить полку.</p>';
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', renderAllSections);
+    // 3. ВОЗВРАТ КНИГИ (БД)
+    async function handleReturn(bookId) {
+        if (!confirm("Вернуть книгу в библиотеку?")) return;
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${API_URL}/library/return/${bookId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                renderBorrowedBooks(token);
+            }
+        } catch (err) {
+            alert("Ошибка при возврате");
+        }
+    }
+
+    // 4. КАЛЕНДАРЬ (Статика)
+    function renderCalendar() {
+        const calendar = document.getElementById('readingCalendar');
+        const today = new Date();
+        let html = '';
+        for(let i=20; i>=0; i--) {
+            const d = new Date(); d.setDate(today.getDate() - i);
+            const active = i === 0;
+            html += `<div class="calendar-day" style="background:${active ? 'var(--accent)' : 'rgba(0,0,0,0.1)'}; color:${active?'white':'var(--text-light)'}">${d.getDate()}</div>`;
+        }
+        calendar.innerHTML = html;
+    }
+
+    // ВЫХОД
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = "index.html";
+    });
   </script>
 </body>
 </html>
