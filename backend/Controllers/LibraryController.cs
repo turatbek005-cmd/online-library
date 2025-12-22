@@ -1,59 +1,93 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using backend.Models;
+using System.Security.Claims;
 
 namespace backend.Controllers;
 
+[Authorize] // Только для залогиненных
 [ApiController]
 [Route("api/library")]
 public class LibraryController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    public LibraryController(IConfiguration configuration) => _configuration = configuration;
 
-    public LibraryController(IConfiguration configuration)
+    // 1. ПОЛУЧИТЬ МОЮ ПОЛКУ (Лично для каждого юзера)
+    [HttpGet("my-books")]
+    public async Task<IActionResult> GetMyBooks()
     {
-        _configuration = configuration;
-    }
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var books = new List<object>();
+        string connStr = _configuration.GetConnectionString("DefaultConnection")!;
 
-    // DTO для получения данных от фронта
-    public class BorrowRequest
-    {
-        public int UserId { get; set; }
-        public int BookId { get; set; }
-    }
+        await using var conn = new NpgsqlConnection(connStr);
+        await conn.OpenAsync();
 
-    // 1. ВЗЯТЬ КНИГУ (POST: api/library/borrow)
-    [HttpPost("borrow")]
-    public async Task<IActionResult> BorrowBook([FromBody] BorrowRequest request)
-    {
-        // 👇 ЭТО ВЫВЕДЕТСЯ В ТЕРМИНАЛ
-        Console.WriteLine($"---> ЗАПРОС: Юзер {request.UserId} берет книгу {request.BookId}");
+        // Джойним таблицу связей с таблицей книг
+        string sql = @"
+            SELECT b.id, b.title, b.author, b.cover_image, b.file_url 
+            FROM user_books ub
+            JOIN books b ON ub.book_id = b.id
+            WHERE ub.user_id = @uid";
 
-        string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
-        
-        try 
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("uid", userId);
+        await using var reader = await cmd.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
         {
-            await using var connection = new NpgsqlConnection(connectionString);
-            await connection.OpenAsync();
+            books.Add(new {
+                id = reader.GetInt32(0),
+                title = reader.GetString(1),
+                author = reader.GetString(2),
+                cover = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                fileUrl = reader.IsDBNull(4) ? "" : reader.GetString(4)
+            });
+        }
+        return Ok(books);
+    }
 
+    // 2. ВЗЯТЬ КНИГУ (Исправлено)
+    [HttpPost("borrow/{bookId}")]
+    public async Task<IActionResult> BorrowBook(int bookId)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        string connStr = _configuration.GetConnectionString("DefaultConnection")!;
+
+        try {
+            await using var conn = new NpgsqlConnection(connStr);
+            await conn.OpenAsync();
+            
             string sql = "INSERT INTO user_books (user_id, book_id) VALUES (@uid, @bid)";
-            
-            await using var command = new NpgsqlCommand(sql, connection);
-            command.Parameters.AddWithValue("uid", request.UserId);
-            command.Parameters.AddWithValue("bid", request.BookId);
+            await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("uid", userId);
+            cmd.Parameters.AddWithValue("bid", bookId);
+            await cmd.ExecuteNonQueryAsync();
 
-            await command.ExecuteNonQueryAsync();
-            
-            Console.WriteLine("---> УСПЕХ: Книга сохранена в БД!");
-            return Ok(new { message = "Книга добавлена на полку!" });
+            return Ok(new { message = "Книга добавлена на вашу полку!" });
         }
-        catch (PostgresException ex)
-        {
-            Console.WriteLine($"---> ОШИБКА БД: {ex.Message}");
-            if (ex.SqlState == "23505") 
-                return BadRequest(new { message = "Эта книга уже у вас есть!" });
+        catch (PostgresException ex) when (ex.SqlState == "23505") {
+            return BadRequest(new { message = "Эта книга уже есть на вашей полке" });
+        }
+    }
 
-            return StatusCode(500, $"Ошибка БД: {ex.Message}");
-        }
+    // 3. ВЕРНУТЬ КНИГУ (Удаление связи)
+    [HttpDelete("return/{bookId}")]
+    public async Task<IActionResult> ReturnBook(int bookId)
+    {
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        string connStr = _configuration.GetConnectionString("DefaultConnection")!;
+
+        await using var conn = new NpgsqlConnection(connStr);
+        await conn.OpenAsync();
+
+        string sql = "DELETE FROM user_books WHERE user_id = @uid AND book_id = @bid";
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("uid", userId);
+        cmd.Parameters.AddWithValue("bid", bookId);
+        await cmd.ExecuteNonQueryAsync();
+
+        return Ok(new { message = "Книга возвращена в библиотеку" });
     }
 }
