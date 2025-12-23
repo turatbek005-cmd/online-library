@@ -18,7 +18,6 @@
           <a href="index.html" class="nav-link active">Главная</a>
           <a href="catalog.html" class="nav-link">Каталог</a>
           <a href="profile.html" class="nav-link">Моя полка</a>
-          <a href="login.html" class="nav-link active">Войти</a>
           <a href="shop.html" class="nav-link">Магазин</a>
         </nav>
       </div>
@@ -142,36 +141,34 @@
       return recommendations.slice(0, 4);
     }
     
-    function renderRecommendations() {
-      const grid = document.getElementById('recommendationsGrid');
-      const recs = getRecommendations();
-      
-      if (recs.length === 0) {
-        grid.innerHTML = `
-          <div style="text-align: center; color: var(--text-light); grid-column: 1 / -1;">
-            <p style="margin-bottom: 1rem;">Возьмите первые книги, чтобы получить рекомендации!</p>
-            <a href="catalog.html" class="btn btn-secondary">Перейти в каталог</a>
-          </div>
-        `;
-        return;
-      }
-      
-      const html = recs.map(book => `
-        <div class="book-card scroll-reveal" 
-             onclick="window.location.href='catalog.html#${book.id}'"
-             style="cursor: pointer;">
-          <div class="book-cover">${book.cover}</div>
-          <div class="book-info">
-            <h3 class="book-title">${book.title}</h3>
-            <p class="book-author">${book.author}</p>
-            <p class="book-year">${book.year}</p>
-            <span class="book-status available">Рекомендуем</span>
-          </div>
-        </div>
-      `).join('');
-      
-      grid.innerHTML = html;
-      setupScrollAnimations();
+    async function renderRecommendations() {
+    const grid = document.getElementById('recommendationsGrid');
+    if(!grid) return;
+
+    try {
+        const response = await fetch(`http://localhost:5283/api/books/top`);
+        const topBooks = await response.json();
+
+        if (topBooks.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; width:100%; color:var(--text-muted); padding: 3rem;">Пока нет оцененных книг. Будьте первым!</p>';
+            return;
+        }
+
+        grid.innerHTML = topBooks.map(book => `
+            <div class="book-card" onclick="window.location.href='book-details.html?id=${book.id}'">
+                <div class="book-cover-wrapper">
+                    <img src="${book.coverImage || 'assets/images/placeholder-book.jpg'}" class="book-cover">
+                    <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.8); color:#d4af37; padding:4px 8px; border-radius:8px; font-weight:bold; border:1px solid #d4af37;">
+                        ★ ${book.rating}
+                    </div>
+                </div>
+                <div class="book-title">${book.title}</div>
+            </div>
+        `).join('');
+
+    } catch (e) {
+        console.error("Ошибка загрузки ТОП-10:", e);
+    }
     }
 
     // === ТЕКУЩИЕ КНИГИ ===
