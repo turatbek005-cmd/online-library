@@ -10,114 +10,10 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/login.css">
 
   <style>
-    /* === ИСПРАВЛЕНИЕ ЦВЕТОВ И СТИЛЯ === */
-    
-    /* Делаем фон страницы приятным бежевым/светлым (если вдруг он был белым) */
-    body {
-        color: #2c2c2c; /* Основной текст темный */
-    }
-
-    /* Карточка входа: Светлая "бумажная" подложка */
-    .auth-card {
-        background: #fdfbf7; /* Цвет старой бумаги */
-        border: 1px solid #e0d6c2;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05); /* Мягкая тень */
-        padding: 2.5rem;
-        border-radius: 20px;
-    }
-
-    /* Заголовки: Шрифт с засечками, красивый темно-коричневый цвет */
-    .page-title {
-        font-family: 'Cormorant Garamond', serif;
-        color: #3d2b1f; /* Темно-коричневый, как кожаный переплет */
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        text-shadow: none; /* Убрали лишнее свечение для строгости */
-    }
-    
-    .auth-card p {
-        font-family: 'Inter', sans-serif;
-        color: #6b5e51; /* Серо-коричневый для подзаголовков */
-    }
-
-    /* Поля ввода: Четкий контраст */
-    .form-label {
-        color: #3d2b1f;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-input {
-        background: #ffffff;
-        color: #1a1a1a; /* Абсолютно темный текст внутри поля */
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 12px;
-        font-family: 'Inter', sans-serif;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
-
-    .form-input::placeholder {
-        color: #999; /* Светло-серый плейсхолдер */
-    }
-
-    .form-input:focus {
-        border-color: #d4af37; /* Золотая обводка при нажатии */
-        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
-        outline: none;
-    }
-
-    /* Кнопка */
-    .btn-primary {
-        background: #3d2b1f; /* Темная кнопка */
-        color: #d4af37; /* Золотой текст */
-        font-family: 'Inter', sans-serif;
-        font-weight: 600;
-        border: 1px solid #d4af37;
-        transition: all 0.3s;
-    }
-    
-    .btn-primary:hover {
-        background: #d4af37;
-        color: #3d2b1f;
-    }
-
-    /* Ссылка внизу */
-    .auth-footer a {
-        color: #c59d24; /* Золотой цвет ссылки */
-        font-weight: 700;
-        text-decoration: none;
-    }
-    .auth-footer a:hover {
-        text-decoration: underline;
-        color: #a68216;
-    }
-
-    /* === МОДАЛЬНОЕ ОКНО (ОСТАВЛЯЕМ ТЕМНЫМ ДЛЯ КОНТРАСТА) === */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
-        display: none; align-items: center; justify-content: center; z-index: 10000;
-        animation: fadeIn 0.3s ease;
-    }
-    .modal-content {
-        background: #2b221e; /* Темный фон окна для важности */
-        padding: 2.5rem; border-radius: 16px;
-        border: 1px solid #d4af37; 
-        text-align: center;
-        max-width: 400px; width: 90%; 
-        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    }
-    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #fff; margin-bottom: 0.5rem; }
-    .modal-text { color: #e0e0e0; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif; font-size: 1.1rem; }
-    
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+   
   </style>
 </head>
 <body>
@@ -129,6 +25,7 @@
           <a href="index.html" class="nav-link">Главная</a>
           <a href="catalog.html" class="nav-link">Каталог</a>
           <a href="shop.html" class="nav-link">Магазин</a>
+
         </nav>
       </div>
     </div>
@@ -179,54 +76,6 @@
     </div>
   </footer>
   
-  <script>
-    const API_URL = "http://localhost:5283/api";
-
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const btn = this.querySelector('button');
-        const originalText = btn.innerText;
-        
-        btn.innerText = "Проверка...";
-
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                showModal('Успешно!', 'Добро пожаловать домой, читатель.', true);
-                setTimeout(() => { window.location.href = 'profile.html'; }, 1500);
-            } else {
-                showModal('Ошибка входа', data.message || "Неверный email или пароль", false);
-            }
-        } catch (error) {
-            showModal('Ошибка сети', 'Сервер библиотеки не отвечает.', false);
-        } finally {
-            btn.innerText = originalText;
-        }
-    });
-
-    function showModal(title, message, isSuccess) {
-        const modal = document.getElementById('customModal');
-        document.getElementById('modalTitle').innerText = title;
-        document.getElementById('modalMessage').innerText = message;
-        document.getElementById('modalIcon').innerText = isSuccess ? '✨' : '🛑';
-        modal.style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('customModal').style.display = 'none';
-    }
-  </script>
+  <script src="js/login.js"></script>
 </body>
 </html>
