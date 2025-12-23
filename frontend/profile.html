@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/responsive.css">
   
   <style>
-    /* === СТИЛИ ПРОФИЛЯ (Адаптированы под светлую тему) === */
+    /* === СТИЛИ ПРОФИЛЯ === */
     .profile-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -22,7 +22,6 @@
       margin-top: 2rem;
     }
     
-    /* Карточка пользователя (как feature-card) */
     .profile-sidebar .user-card {
       background: var(--surface);
       backdrop-filter: blur(10px);
@@ -94,7 +93,7 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        background: rgba(44, 24, 16, 0.85); /* Темный фон для читаемости ранга */
+        background: rgba(44, 24, 16, 0.85);
         color: #d4af37;
         font-size: 12px;
         font-weight: bold;
@@ -119,6 +118,61 @@
     @media (max-width: 900px) {
         .profile-layout { grid-template-columns: 1fr; }
         .profile-sidebar .user-card { position: static; }
+    }
+
+    /* === СТИЛИ УДАРНОГО РЕЖИМА (STREAK) === */
+    .avatar-container {
+        position: relative;
+        width: 120px;
+        margin: 0 auto 1rem;
+    }
+
+    .streak-badge {
+        position: absolute;
+        bottom: 5px;
+        right: -10px;
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        padding: 4px 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        z-index: 10;
+    }
+
+    .streak-badge:hover { transform: scale(1.1); }
+    
+    .streak-count {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text);
+        font-family: var(--font-heading);
+    }
+
+    /* УРОВНИ ОГНЯ */
+    .fire-lvl-1 { border-color: #ffa500; }
+    .fire-lvl-1 #streak-icon { filter: drop-shadow(0 0 2px orange); }
+
+    .fire-lvl-2 { border-color: #ff8c00; box-shadow: 0 0 10px rgba(255, 140, 0, 0.3); }
+    .fire-lvl-2 #streak-icon { filter: drop-shadow(0 0 5px #ff8c00); }
+
+    .fire-lvl-3 { border-color: #ff4500; box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); }
+    .fire-lvl-3 #streak-icon { filter: drop-shadow(0 0 8px #ff4500); }
+
+    .fire-lvl-4 { border-color: #d946ef; box-shadow: 0 0 20px rgba(217, 70, 239, 0.5); }
+    .fire-lvl-4 #streak-icon { filter: drop-shadow(0 0 10px #d946ef); }
+
+    .fire-lvl-5 { border-color: #00ffff; box-shadow: 0 0 25px rgba(0, 255, 255, 0.6); }
+    .fire-lvl-5 #streak-icon { filter: drop-shadow(0 0 12px #00ffff); }
+
+    .fire-lost {
+        background: #e5e5e5;
+        border-color: #9ca3af;
+        filter: grayscale(100%);
     }
   </style>
 </head>
@@ -146,7 +200,18 @@
         <!-- ЛЕВАЯ КОЛОНКА -->
         <aside class="profile-sidebar">
           <div class="user-card">
-            <div class="user-avatar">👤</div>
+            
+            <!-- Аватар с Огнем -->
+            <div class="avatar-container">
+                <div class="user-avatar">👤</div>
+                
+                <!-- Элемент Стрика (наполняется в JS) -->
+                <div id="streak-badge" class="streak-badge" style="display: none;">
+                    <span id="streak-icon">🔥</span>
+                    <span id="streak-count" class="streak-count">0</span>
+                </div>
+            </div>
+
             <h2 id="profile-username" style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--text);">Загрузка...</h2>
             <p id="profile-email" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">...</p>
             
@@ -198,205 +263,7 @@
     </div>
   </footer>
 
-  <script>
-    const API_URL = "http://localhost:5283/api";
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        const token = localStorage.getItem('token');
-
-        if (!user || !token) {
-            window.location.href = "login.html";
-            return;
-        }
-
-        document.getElementById('profile-username').innerText = user.username;
-        document.getElementById('profile-email').innerText = user.email;
-        document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
-
-        loadUserCollection(token);
-        renderBorrowedBooks(token);
-        renderCalendar();
-    });
-
-    async function loadUserCollection(token) {
-        const container = document.getElementById('collectionContainer');
-        try {
-            const response = await fetch(`${API_URL}/shop/my-cards`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const cards = await response.json();
-            if (cards.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">Коллекция пуста.</p>';
-                return;
-            }
-            container.innerHTML = `<div class="collection-grid">${cards.map(card => `
-                <div class="collection-item scroll-reveal" style="border-color: ${getRankColor(card.rank)}">
-                    <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="${card.name}">
-                    <div class="rank-tag">${card.rank}</div>
-                </div>`).join('')}</div>`;
-        } catch (err) {
-            container.innerHTML = '<p style="color: var(--status-unavailable);">Ошибка загрузки карт.</p>';
-        }
-    }
-
-    function getRankColor(rank) {
-        const colors = { 'S': '#ffd700', 'A': '#9b5de5', 'B': '#00bbf9', 'C': '#00f5d4', 'D': '#a8a8a8', 'E': '#cd7f32' };
-        return colors[rank.toUpperCase()] || 'transparent';
-    }
-
-    async function renderBorrowedBooks(token) {
-        const list = document.getElementById('borrowedBooksList');
-        const empty = document.getElementById('noBooksMessage');
-
-        try {
-            const response = await fetch(`${API_URL}/library/my-books`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const books = await response.json();
-
-            if (books.length === 0) {
-                list.innerHTML = '';
-                empty.style.display = 'block';
-                return;
-            }
-
-            empty.style.display = 'none';
-            list.innerHTML = books.map(b => `
-                <div style="background: rgba(255,255,255,0.6); padding:1.5rem; margin-bottom:1rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="font-size: 2rem;">📖</div>
-                        <div>
-                            <strong style="font-size:1.2rem; color:var(--text); font-family: var(--font-heading);">${b.title}</strong><br>
-                            <span style="color:var(--text-muted);">${b.author}</span>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        ${b.fileUrl ? `<a href="${b.fileUrl}" target="_blank" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Читать</a>` : ''}
-                        <button onclick="handleReturn(${b.id})" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Вернуть</button>
-                    </div>
-                </div>`).join('');
-        } catch (err) {
-            list.innerHTML = '<p style="color: var(--status-unavailable);">Не удалось загрузить полку.</p>';
-        }
-    }
-
-    // Вспомогательная функция для вызова окна
-function showModal({ title, text, icon, onConfirm, showCancel = true }) {
-    const modal = document.getElementById('appModal');
-    const titleEl = document.getElementById('modalTitle');
-    const textEl = document.getElementById('modalText');
-    const iconEl = document.getElementById('modalIcon');
-    const actionsEl = document.getElementById('modalActions');
-
-    titleEl.innerText = title;
-    textEl.innerText = text;
-    iconEl.innerText = icon || '🔔';
-    
-    actionsEl.innerHTML = ''; // Очищаем старые кнопки
-
-    // Кнопка отмены
-    if (showCancel) {
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'btn-modal btn-cancel';
-        cancelBtn.innerText = 'Отмена';
-        cancelBtn.onclick = closeModal;
-        actionsEl.appendChild(cancelBtn);
-    }
-
-    // Кнопка подтверждения
-    const confirmBtn = document.createElement('button');
-    confirmBtn.className = 'btn-modal btn-confirm';
-    confirmBtn.innerText = showCancel ? 'Подтвердить' : 'ОК';
-    confirmBtn.onclick = () => {
-        if (onConfirm) onConfirm();
-        closeModal();
-    };
-    actionsEl.appendChild(confirmBtn);
-
-    modal.classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('appModal').classList.remove('active');
-}
-
-// === ОБНОВЛЕННАЯ ФУНКЦИЯ ВОЗВРАТА КНИГИ ===
-async function handleReturn(bookId) {
-    // Вместо нативного confirm вызываем нашу модалку
-    showModal({
-        title: "Вернуть книгу?",
-        text: "Вы уверены, что хотите вернуть эту книгу в библиотеку?",
-        icon: "👋",
-        onConfirm: async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const response = await fetch(`${API_URL}/library/return/${bookId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    // Показываем уведомление об успехе
-                    setTimeout(() => {
-                        showModal({
-                            title: "Книга возвращена",
-                            text: "Спасибо! Книга успешно возвращена в библиотеку.",
-                            icon: "✨",
-                            showCancel: false,
-                            onConfirm: () => renderBorrowedBooks(token) // Обновляем список
-                        });
-                    }, 300);
-                }
-            } catch (err) {
-                console.error(err);
-                showModal({ title: "Ошибка", text: "Не удалось вернуть книгу.", showCancel: false });
-            }
-        }
-    });
-}
-
-    function renderCalendar() {
-        const calendar = document.getElementById('readingCalendar');
-        const today = new Date();
-        let html = '';
-        for(let i=19; i>=0; i--) {
-            const d = new Date(); d.setDate(today.getDate() - i);
-            // Активный день (сегодня) или случайные дни для примера активности
-            const isToday = i === 0;
-            const hasActivity = Math.random() > 0.6 || isToday; // Имитация активности
-            
-            let bg = 'rgba(139, 69, 19, 0.1)';
-            let color = 'var(--text-light)';
-            
-            if (isToday) {
-                bg = 'var(--accent)';
-                color = 'white';
-            } else if (hasActivity) {
-                bg = 'rgba(212, 175, 55, 0.4)';
-                color = 'var(--text)';
-            }
-
-            html += `<div class="calendar-day" style="background:${bg}; color:${color}" title="${d.toLocaleDateString()}">${d.getDate()}</div>`;
-        }
-        calendar.innerHTML = html;
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.clear();
-        window.location.href = "index.html";
-    });
-  </script>
-
-<!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
-<div id="appModal" class="modal-overlay">
-    <div class="modal-window">
-        <span id="modalIcon" class="modal-icon">📚</span>
-        <h3 id="modalTitle" class="modal-title">Заголовок</h3>
-        <p id="modalText" class="modal-text">Текст сообщения...</p>
-        <div id="modalActions" class="modal-actions">
-            <!-- Кнопки будут генерироваться через JS -->
-        </div>
-    </div>
-</div>
+  <!-- ПОДКЛЮЧАЕМ СКРИПТ (Убедись, что путь правильный!) -->
+  <script src="script.js"></script>
 </body>
 </html>
