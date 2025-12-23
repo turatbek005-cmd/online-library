@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Библиотека — Вход</title>
-  <link rel="stylesheet" href="css/main.css" />
+  <title>Вход — The Book</title>
+  
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <header class="header">
@@ -15,7 +19,7 @@
         <nav class="nav">
           <a href="index.html" class="nav-link">Главная</a>
           <a href="catalog.html" class="nav-link">Каталог</a>
-          <a href="login.html" class="nav-link active">Войти</a>
+          <a href="shop.html" class="nav-link">Магазин</a>
         </nav>
       </div>
     </div>
@@ -23,24 +27,28 @@
 
   <main>
     <div class="container">
-      <div class="auth-container">
+      <!-- Обертка для центровки -->
+      <div class="auth-wrapper">
         <div class="auth-card">
-          <h1 class="page-title" style="margin-bottom: 2rem;">Вход в аккаунт</h1>
+          <h1 class="page-title">С возвращением</h1>
+          <p>Введите свои данные для входа в библиотеку</p>
           
-          <form class="form" id="loginForm">
+          <form class="form" action="profile.html"> <!-- Временно перекидывает в профиль -->
             <div class="form-group">
               <label for="email" class="form-label">Email</label>
-              <input type="email" id="email" class="form-input" placeholder="ivan@example.com" required>
+              <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
             </div>
+            
             <div class="form-group">
               <label for="password" class="form-label">Пароль</label>
               <input type="password" id="password" class="form-input" placeholder="••••••••" required>
             </div>
+            
             <button type="submit" class="btn btn-primary btn-full">Войти</button>
           </form>
           
-          <div class="auth-footer" style="text-align: center; margin-top: 1.5rem;">
-            <p>Нет аккаунта? <a href="register.html" style="color: var(--accent); font-weight: 600;">Зарегистрироваться</a></p>
+          <div class="auth-footer">
+            <p>Еще нет аккаунта? <a href="register.html">Создать аккаунт</a></p>
           </div>
         </div>
       </div>
