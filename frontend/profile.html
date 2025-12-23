@@ -99,8 +99,6 @@
       <h1 class="page-title" style="margin-top: 2rem;">Личный кабинет</h1>
 
       <div class="profile-layout">
-        
-        <!-- ЛЕВАЯ КОЛОНКА -->
         <aside class="profile-sidebar">
           <div class="user-card">
             <div class="user-avatar">👤</div>
@@ -115,9 +113,7 @@
           </div>
         </aside>
 
-        <!-- ПРАВАЯ КОЛОНКА -->
         <div class="profile-content">
-          
           <section class="section">
             <h2 class="section-title">🎒 Моя коллекция</h2>
             <div id="collectionContainer">
@@ -140,7 +136,6 @@
               <div id="readingCalendar"></div>
             </div>
           </section>
-
         </div>
       </div>
     </div>
@@ -164,36 +159,49 @@
             return;
         }
 
-        // Заполняем профиль из памяти
+        // Заполняем базовые данные
         document.getElementById('profile-username').innerText = user.username;
         document.getElementById('profile-email').innerText = user.email;
         document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
 
-        // Грузим данные с сервера
+        // Загружаем данные с сервера
         loadUserCollection(token);
-        renderBorrowedBooks(token);
+        renderBorrowedBooks();
         renderCalendar();
     });
 
-    // 1. ЗАГРУЗКА КАРТ (БД)
+    // 1. ЗАГРУЗКА КАРТ ИЗ БАЗЫ
     async function loadUserCollection(token) {
         const container = document.getElementById('collectionContainer');
+        
         try {
             const response = await fetch(`${API_URL}/shop/my-cards`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+
+            if (!response.ok) throw new Error("Ошибка доступа");
+
             const cards = await response.json();
+
             if (cards.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">Коллекция пуста.</p>';
+                container.innerHTML = '<p style="color: var(--text-muted);">У вас пока нет карт. Купите их в магазине!</p>';
                 return;
             }
-            container.innerHTML = `<div class="collection-grid">${cards.map(card => `
+
+            let html = '<div class="collection-grid">';
+            cards.forEach(card => {
+                html += `
                 <div class="collection-item" style="border-color: ${getRankColor(card.rank)}">
                     <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="${card.name}">
                     <div class="rank-tag">${card.rank}</div>
-                </div>`).join('')}</div>`;
-        } catch (err) {
-            container.innerHTML = '<p style="color:red;">Ошибка загрузки карт.</p>';
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<p style="color: red;">Не удалось загрузить коллекцию. Проверьте бэкенд.</p>';
         }
     }
 
@@ -202,65 +210,43 @@
         return colors[rank.toUpperCase()] || 'transparent';
     }
 
-    // 2. ЗАГРУЗКА КНИГ (БД)
-    async function renderBorrowedBooks(token) {
+    // 2. КНИГИ (из LocalStorage пока что)
+    function renderBorrowedBooks() {
+        const books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
         const list = document.getElementById('borrowedBooksList');
         const empty = document.getElementById('noBooksMessage');
-
-        try {
-            const response = await fetch(`${API_URL}/library/my-books`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const books = await response.json();
-
-            if (books.length === 0) {
-                list.innerHTML = '';
-                empty.style.display = 'block';
-                return;
-            }
-
+        
+        if (books.length === 0) {
+            list.innerHTML = '';
+            empty.style.display = 'block';
+        } else {
             empty.style.display = 'none';
             list.innerHTML = books.map(b => `
-                <div style="background:rgba(255,255,255,0.05); padding:1.5rem; margin-bottom:1rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
+                <div style="background:rgba(255,255,255,0.05); padding:1rem; margin-bottom:1rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
                     <div>
-                        <strong style="font-size:1.2rem; color:var(--text);">${b.title}</strong><br>
-                        <span style="color:var(--text-muted);">${b.author}</span>
+                        <strong style="font-size:1.1rem; color: var(--text);">${b.title}</strong><br>
+                        <small style="color: var(--text-muted);">${b.author}</small>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        ${b.fileUrl ? `<a href="${b.fileUrl}" target="_blank" class="btn btn-primary btn-small">Читать</a>` : ''}
-                        <button onclick="handleReturn(${b.id})" class="btn btn-secondary btn-small">Вернуть</button>
-                    </div>
+                    <button onclick="returnBook('${b.id}')" class="btn btn-secondary btn-small">Вернуть</button>
                 </div>`).join('');
-        } catch (err) {
-            list.innerHTML = '<p style="color:red;">Не удалось загрузить полку.</p>';
         }
     }
 
-    // 3. ВОЗВРАТ КНИГИ (БД)
-    async function handleReturn(bookId) {
-        if (!confirm("Вернуть книгу в библиотеку?")) return;
-        const token = localStorage.getItem('token');
-        try {
-            const response = await fetch(`${API_URL}/library/return/${bookId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                renderBorrowedBooks(token);
-            }
-        } catch (err) {
-            alert("Ошибка при возврате");
-        }
+    function returnBook(id) {
+        let books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+        books = books.filter(b => b.id != id);
+        localStorage.setItem('borrowedBooks', JSON.stringify(books));
+        renderBorrowedBooks();
     }
 
-    // 4. КАЛЕНДАРЬ (Статика)
+    // 3. КАЛЕНДАРЬ
     function renderCalendar() {
         const calendar = document.getElementById('readingCalendar');
         const today = new Date();
         let html = '';
         for(let i=20; i>=0; i--) {
             const d = new Date(); d.setDate(today.getDate() - i);
-            const active = i === 0;
+            const active = i === 0; // Для примера активен только сегодня
             html += `<div class="calendar-day" style="background:${active ? 'var(--accent)' : 'rgba(0,0,0,0.1)'}; color:${active?'white':'var(--text-light)'}">${d.getDate()}</div>`;
         }
         calendar.innerHTML = html;
@@ -268,7 +254,8 @@
 
     // ВЫХОД
     document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.clear();
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         window.location.href = "index.html";
     });
   </script>

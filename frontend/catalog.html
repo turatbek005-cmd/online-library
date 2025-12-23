@@ -7,14 +7,22 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
+  <!-- СТИЛИ -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
 
   <style>
+<<<<<<< HEAD
     /* --- ШАПКА КАТАЛОГА --- */
     .catalog-header { text-align: center; margin: 3rem 0; }
     .page-title { font-family: var(--font-heading); font-size: 3rem; color: var(--text); margin-bottom: 1.5rem; }
+=======
+    /* Стили для каталога */
+    .catalog-header { text-align: center; margin: 2rem 0 3rem; }
+    .search-bar { max-width: 500px; margin: 0 auto 1.5rem; display: flex; gap: 10px; }
+    .search-input { flex: 1; padding: 0.8rem 1.5rem; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+>>>>>>> parent of 2035922 (изменения каталога)
     
     .search-bar { max-width: 600px; margin: 0 auto 2rem; position: relative; }
     .search-input { 
@@ -28,9 +36,15 @@
     /* --- СЕТКА КНИГ (КОМПАКТНАЯ) --- */
     .books-grid {
       display: grid;
+<<<<<<< HEAD
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Узкие карточки */
       gap: 2.5rem;
       padding-bottom: 5rem;
+=======
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2rem;
+      min-height: 200px; /* Чтобы видно было загрузку */
+>>>>>>> parent of 2035922 (изменения каталога)
     }
 
     /* --- КАРТОЧКА КНИГИ (ТОЛЬКО ФОТО И НАЗВАНИЕ) --- */
@@ -120,16 +134,25 @@
 
   <main>
     <div class="container">
+      
       <div class="catalog-header">
         <h1 class="page-title">Библиотека знаний</h1>
+        
+        <!-- ПОИСК -->
         <div class="search-bar">
           <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию или автору...">
         </div>
       </div>
 
+      <!-- ВАЖНО: ID должен быть "booksGrid", скрипт ищет именно его -->
       <div id="booksGrid" class="books-grid">
+<<<<<<< HEAD
          <!-- Книги загрузятся сюда -->
+=======
+         <p style="text-align: center; width: 100%; grid-column: 1/-1; color: var(--text-muted);">Загрузка книг...</p>
+>>>>>>> parent of 2035922 (изменения каталога)
       </div>
+
     </div>
   </main>
 
@@ -137,7 +160,9 @@
     <div class="container"><p>&copy; 2025 Библиотека «The Book».</p></div>
   </footer>
 
+  <!-- СКРИПТ КАТАЛОГА -->
   <script>
+<<<<<<< HEAD
     const API_URL = "http://localhost:5283/api";
     let allBooks = [];
 
@@ -200,6 +225,139 @@
         );
         renderBooks(filtered);
     });
+=======
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. НАСТРОЙКИ
+        const API_URL = "http://localhost:5283/api"; // <-- ПРОВЕРЬ ПОРТ!
+        let allBooks = [];
+
+        // 2. ЗАГРУЗКА
+        fetchBooks();
+
+        async function fetchBooks() {
+            const grid = document.getElementById('booksGrid');
+            if (!grid) {
+                console.error("ОШИБКА: Не найден элемент с id='booksGrid'");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/books`);
+                if (!response.ok) throw new Error("Ошибка сети");
+                
+                const data = await response.json();
+                allBooks = data; // Сохраняем для поиска
+
+                renderBooks(allBooks);
+                
+            } catch (error) {
+                console.error(error);
+                grid.innerHTML = '<p style="text-align: center; color: red;">Не удалось загрузить книги. Проверьте, запущен ли сервер.</p>';
+            }
+        }
+
+        // 3. ОТРИСОВКА
+        function renderBooks(books) {
+            const grid = document.getElementById('booksGrid');
+            grid.innerHTML = '';
+
+            if (books.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; width: 100%;">Книг не найдено.</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                // Если нет картинки, ставим заглушку
+                let imageHtml = `<div class="book-cover">📖</div>`;
+                if (book.coverImage && book.coverImage.length > 5) {
+                    imageHtml = `<img src="${book.coverImage}" alt="${book.title}" class="book-cover">`;
+                }
+
+                // Проверяем, взята ли книга
+                const isBorrowed = checkIsBorrowed(book.id);
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    ${imageHtml}
+                    <div class="book-info">
+                        <h3 class="book-title">${book.title}</h3>
+                        <p class="book-author">${book.author}</p>
+                        <div class="book-footer">
+                            <button class="btn btn-primary btn-small btn-full" 
+                                onclick="takeBook(${book.id}, '${escapeHtml(book.title)}', '${escapeHtml(book.author)}', '${escapeHtml(book.fileUrl)}')"
+                                ${isBorrowed ? 'disabled style="opacity:0.5"' : ''}>
+                                ${isBorrowed ? 'В полке ✓' : 'Взять'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 4. ПОИСК
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                const filtered = allBooks.filter(b => 
+                    b.title.toLowerCase().includes(val) || 
+                    b.author.toLowerCase().includes(val)
+                );
+                renderBooks(filtered);
+            });
+        }
+    });
+
+    // 5. ЛОГИКА "ВЗЯТЬ КНИГУ" (Глобальная)
+    function takeBook(id, title, author, fileUrl) {
+        // Проверка входа
+        const user = localStorage.getItem('user');
+        if (!user) {
+            alert("Сначала войдите в аккаунт!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        let borrowed = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+        
+        if (borrowed.some(b => b.id == id)) {
+            alert("Эта книга уже у вас!");
+            return;
+        }
+
+        borrowed.push({
+            id: id,
+            title: title,
+            author: author,
+            file_url: fileUrl,
+            date: new Date().toLocaleDateString('ru-RU')
+        });
+
+        localStorage.setItem('borrowedBooks', JSON.stringify(borrowed));
+        alert(`Книга "${title}" добавлена!`);
+        
+        // Обновляем кнопку без перезагрузки
+        location.reload(); 
+    }
+
+    function checkIsBorrowed(id) {
+        let borrowed = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+        return borrowed.some(b => b.id == id);
+    }
+
+    // Вспомогательная функция для безопасности кавычек
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+>>>>>>> parent of 2035922 (изменения каталога)
   </script>
 </body>
 </html>
