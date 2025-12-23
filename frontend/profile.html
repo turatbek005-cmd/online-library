@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/components.css">
   
   <style>
+    /* === ОБЩАЯ СЕТКА ПРОФИЛЯ === */
     .profile-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -27,6 +28,7 @@
       border: 1px solid var(--border);
       position: sticky;
       top: 100px;
+      box-shadow: var(--shadow);
     }
     
     .user-avatar { font-size: 4rem; margin-bottom: 1rem; }
@@ -37,8 +39,10 @@
       border-radius: 20px;
       margin-bottom: 2rem;
       border: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
 
+    /* === СЕТКА КАРТ === */
     .collection-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -61,17 +65,68 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        background: rgba(0,0,0,0.7);
+        background: rgba(0,0,0,0.8);
         color: white;
         font-size: 12px;
         font-weight: bold;
         text-align: center;
-        padding: 2px 0;
+        padding: 4px 0;
+        text-transform: uppercase;
     }
 
-    .calendar-wrapper { display: flex; justify-content: center; }
-    #readingCalendar { display: flex; gap: 5px; flex-wrap: wrap; max-width: 350px; justify-content: center; }
-    .calendar-day { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+    /* === УДАРНЫЙ РЕЖИМ (STREAK) === */
+    .streak-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        background: linear-gradient(135deg, rgba(255, 69, 0, 0.05), rgba(255, 215, 0, 0.05));
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 69, 0, 0.2);
+    }
+
+    .streak-icon {
+        font-size: 5rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.6));
+        animation: flame-pulse 2s infinite ease-in-out;
+        transition: filter 0.5s;
+    }
+
+    /* Если стрик 0 - огонь серый и не пульсирует */
+    .streak-icon.inactive {
+        filter: grayscale(100%) opacity(0.3);
+        animation: none;
+    }
+
+    .streak-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .streak-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 4rem;
+        font-weight: 700;
+        color: #ff4500;
+        line-height: 1;
+        text-shadow: 0 2px 10px rgba(255, 69, 0, 0.3);
+    }
+
+    .streak-label {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @keyframes flame-pulse {
+        0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 69, 0, 0.4)); }
+        50% { transform: scale(1.1); filter: drop-shadow(0 0 25px rgba(255, 140, 0, 0.8)); }
+        100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 69, 0, 0.4)); }
+    }
     
     @media (max-width: 900px) {
         .profile-layout { grid-template-columns: 1fr; }
@@ -99,10 +154,15 @@
       <h1 class="page-title" style="margin-top: 2rem;">Личный кабинет</h1>
 
       <div class="profile-layout">
+<<<<<<< Updated upstream
+=======
+        
+        <!-- ЛЕВАЯ КОЛОНКА (Профиль) -->
+>>>>>>> Stashed changes
         <aside class="profile-sidebar">
           <div class="user-card">
             <div class="user-avatar">👤</div>
-            <h2 id="profile-username" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">Загрузка...</h2>
+            <h2 id="profile-username" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text);">...</h2>
             <p id="profile-email" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">...</p>
             
             <div style="background: rgba(212, 175, 55, 0.15); color: #d4af37; padding: 0.5rem 1rem; border-radius: 20px; display: inline-block; font-weight: 600;">
@@ -113,27 +173,45 @@
           </div>
         </aside>
 
+<<<<<<< Updated upstream
         <div class="profile-content">
+=======
+        <!-- ПРАВАЯ КОЛОНКА (Контент) -->
+        <div class="profile-content">
+          
+          <!-- СЕКЦИЯ: УДАРНЫЙ РЕЖИМ (STREAK) -->
+>>>>>>> Stashed changes
           <section class="section">
-            <h2 class="section-title">🎒 Моя коллекция</h2>
+            <h2 class="section-title">🔥 Активность</h2>
+            
+            <div class="streak-container">
+                <div class="streak-icon inactive" id="streakIcon">🔥</div>
+                <div class="streak-info">
+                    <span class="streak-number" id="streakCount">0</span>
+                    <span class="streak-label">дней подряд</span>
+                </div>
+            </div>
+            
+            <p style="text-align: center; color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">
+                Читайте больше 10 минут в день, чтобы поддерживать огонь!
+            </p>
+          </section>
+
+          <!-- СЕКЦИЯ: КОЛЛЕКЦИЯ -->
+          <section class="section">
+            <h2 class="section-title">🎒 Моя коллекция карт</h2>
             <div id="collectionContainer">
-                <p style="color: var(--text-muted);">Синхронизация артефактов...</p>
+                <p style="color: var(--text-muted);">Загрузка коллекции...</p>
             </div>
           </section>
 
+          <!-- СЕКЦИЯ: КНИГИ -->
           <section class="section">
             <h2 class="section-title">📖 Читаю сейчас</h2>
             <div id="borrowedBooksList"></div>
             <div id="noBooksMessage" style="text-align: center; padding: 2rem; display: none;">
-               <p style="color: var(--text-muted);">Полка пуста. Самое время выбрать книгу!</p>
-               <a href="catalog.html" style="color: var(--accent); font-weight: bold;">В каталог →</a>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2 class="section-title">🔥 Активность</h2>
-            <div class="calendar-wrapper">
-              <div id="readingCalendar"></div>
+               <p style="color: var(--text-muted); margin-bottom: 1rem;">Полка пуста. Самое время выбрать книгу!</p>
+               <a href="catalog.html" class="btn btn-secondary btn-small">В каталог →</a>
             </div>
           </section>
         </div>
@@ -151,14 +229,16 @@
     const API_URL = "http://localhost:5283/api";
 
     document.addEventListener('DOMContentLoaded', () => {
-        const user = JSON.parse(localStorage.getItem('user'));
+        // 1. ПРОВЕРКА ВХОДА
+        const userJson = localStorage.getItem('user');
         const token = localStorage.getItem('token');
 
-        if (!user || !token) {
+        if (!userJson || !token) {
             window.location.href = "login.html";
             return;
         }
 
+<<<<<<< Updated upstream
         // Заполняем базовые данные
         document.getElementById('profile-username').innerText = user.username;
         document.getElementById('profile-email').innerText = user.email;
@@ -171,6 +251,36 @@
     });
 
     // 1. ЗАГРУЗКА КАРТ ИЗ БАЗЫ
+=======
+        const user = JSON.parse(userJson);
+
+        // 2. ЗАПОЛНЯЕМ ДАННЫЕ ЮЗЕРА
+        document.getElementById('profile-username').innerText = user.username || "Читатель";
+        document.getElementById('profile-email').innerText = user.email || "";
+        document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
+
+        // 3. УДАРНЫЙ РЕЖИМ (STREAK) - НОВЫЙ КОД
+        const streakCount = user.streak_current || 0; // Берем из базы данных (поле streak_current)
+        const streakEl = document.getElementById('streakCount');
+        const iconEl = document.getElementById('streakIcon');
+
+        streakEl.innerText = streakCount;
+
+        if (streakCount > 0) {
+            iconEl.classList.remove('inactive'); // Включаем огонь
+            streakEl.style.color = '#ff4500'; // Красный цвет цифры
+        } else {
+            iconEl.classList.add('inactive'); // Серый огонь
+            streakEl.style.color = '#777'; // Серая цифра
+        }
+
+        // 4. ЗАГРУЖАЕМ ОСТАЛЬНОЕ
+        loadUserCollection(token);
+        renderBorrowedBooks(token);
+    });
+
+    // === ФУНКЦИЯ ЗАГРУЗКИ КАРТ ===
+>>>>>>> Stashed changes
     async function loadUserCollection(token) {
         const container = document.getElementById('collectionContainer');
         
@@ -178,6 +288,7 @@
             const response = await fetch(`${API_URL}/shop/my-cards`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+<<<<<<< Updated upstream
 
             if (!response.ok) throw new Error("Ошибка доступа");
 
@@ -202,6 +313,25 @@
         } catch (error) {
             console.error(error);
             container.innerHTML = '<p style="color: red;">Не удалось загрузить коллекцию. Проверьте бэкенд.</p>';
+=======
+            
+            if (!response.ok) throw new Error("Ошибка");
+            
+            const cards = await response.json();
+            
+            if (cards.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Коллекция пуста. Купите сундук в магазине!</p>';
+                return;
+            }
+            
+            container.innerHTML = `<div class="collection-grid">${cards.map(card => `
+                <div class="collection-item" style="border-color: ${getRankColor(card.rank)}">
+                    <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="${card.name}">
+                    <div class="rank-tag" style="background:${getRankColor(card.rank)}; color: black;">${card.rank} RANK</div>
+                </div>`).join('')}</div>`;
+        } catch (err) {
+            container.innerHTML = '<p style="color:red;">Не удалось загрузить карты.</p>';
+>>>>>>> Stashed changes
         }
     }
 
@@ -210,9 +340,14 @@
         return colors[rank.toUpperCase()] || 'transparent';
     }
 
+<<<<<<< Updated upstream
     // 2. КНИГИ (из LocalStorage пока что)
     function renderBorrowedBooks() {
         const books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
+=======
+    // === ФУНКЦИЯ ЗАГРУЗКИ КНИГ НА ПОЛКЕ ===
+    async function renderBorrowedBooks(token) {
+>>>>>>> Stashed changes
         const list = document.getElementById('borrowedBooksList');
         const empty = document.getElementById('noBooksMessage');
         
@@ -222,16 +357,31 @@
         } else {
             empty.style.display = 'none';
             list.innerHTML = books.map(b => `
+<<<<<<< Updated upstream
                 <div style="background:rgba(255,255,255,0.05); padding:1rem; margin-bottom:1rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
                     <div>
                         <strong style="font-size:1.1rem; color: var(--text);">${b.title}</strong><br>
                         <small style="color: var(--text-muted);">${b.author}</small>
+=======
+                <div style="background:var(--surface-alt, #2a2a2a); padding:1.5rem; margin-bottom:1rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap: 15px;">
+                        <span style="font-size: 2rem;">📖</span>
+                        <div>
+                            <strong style="font-size:1.2rem; color:var(--text); display:block;">${b.title}</strong>
+                            <span style="color:var(--text-muted);">${b.author}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${b.fileUrl ? `<a href="${b.fileUrl}" target="_blank" rel="noreferrer" class="btn btn-primary btn-small">Читать</a>` : ''}
+                        <button onclick="handleReturn(${b.id})" class="btn btn-secondary btn-small">Вернуть</button>
+>>>>>>> Stashed changes
                     </div>
                     <button onclick="returnBook('${b.id}')" class="btn btn-secondary btn-small">Вернуть</button>
                 </div>`).join('');
         }
     }
 
+<<<<<<< Updated upstream
     function returnBook(id) {
         let books = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
         books = books.filter(b => b.id != id);
@@ -253,6 +403,28 @@
     }
 
     // ВЫХОД
+=======
+    // === ФУНКЦИЯ ВОЗВРАТА КНИГИ ===
+    async function handleReturn(bookId) {
+        if (!confirm("Вернуть книгу в библиотеку?")) return;
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${API_URL}/library/return/${bookId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                renderBorrowedBooks(token); // Перерисовать список
+            } else {
+                alert("Ошибка при возврате");
+            }
+        } catch (err) {
+            alert("Ошибка сети");
+        }
+    }
+
+    // === ВЫХОД ===
+>>>>>>> Stashed changes
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
