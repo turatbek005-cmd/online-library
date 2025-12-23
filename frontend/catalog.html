@@ -12,31 +12,93 @@
   <link rel="stylesheet" href="css/components.css">
 
   <style>
-    .catalog-header { text-align: center; margin: 2rem 0 3rem; }
-    .search-bar { max-width: 500px; margin: 0 auto 1.5rem; display: flex; gap: 10px; }
-    .search-input { flex: 1; padding: 0.8rem 1.5rem; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+    /* --- ШАПКА КАТАЛОГА --- */
+    .catalog-header { text-align: center; margin: 3rem 0; }
+    .page-title { font-family: var(--font-heading); font-size: 3rem; color: var(--text); margin-bottom: 1.5rem; }
     
+    .search-bar { max-width: 600px; margin: 0 auto 2rem; position: relative; }
+    .search-input { 
+        width: 100%; padding: 1rem 2rem; border-radius: 50px; 
+        border: 1px solid var(--border); background: var(--surface); 
+        color: var(--text); font-size: 1rem; transition: all 0.3s;
+        box-shadow: var(--shadow);
+    }
+    .search-input:focus { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+
+    /* --- СЕТКА КНИГ (КОМПАКТНАЯ) --- */
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 2rem;
-      min-height: 200px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Узкие карточки */
+      gap: 2.5rem;
+      padding-bottom: 5rem;
     }
 
+    /* --- КАРТОЧКА КНИГИ (ТОЛЬКО ФОТО И НАЗВАНИЕ) --- */
     .book-card {
-      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .book-cover-wrapper {
+      width: 100%;
+      aspect-ratio: 2 / 3; /* Классический книжный формат */
       border-radius: 12px;
       overflow: hidden;
+      background: #1a1a1a;
       border: 1px solid var(--border);
-      transition: transform 0.3s;
-      display: flex; flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.4s ease;
     }
-    .book-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-    .book-cover { height: 320px; width: 100%; object-fit: cover; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
-    .book-info { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
-    .book-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
-    .book-author { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
-    .book-footer { margin-top: auto; }
+
+    .book-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .book-title {
+    margin-top: 1rem;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+    /* Универсальная обрезка */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Добавили стандартное свойство */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+    /* ЭФФЕКТ ПРИ НАВЕДЕНИИ */
+    .book-card:hover .book-cover-wrapper {
+      transform: translateY(-8px);
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); /* Золотистое свечение */
+    }
+
+    .book-card:hover .book-cover {
+      transform: scale(1.05);
+    }
+
+    .book-card:hover .book-title {
+      color: var(--accent-gold);
+    }
+
+    /* Анимация появления */
+    .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 480px) {
+        .books-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
+        .book-title { font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -61,12 +123,12 @@
       <div class="catalog-header">
         <h1 class="page-title">Библиотека знаний</h1>
         <div class="search-bar">
-          <input type="text" id="searchInput" class="search-input" placeholder="Поиск книги...">
+          <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию или автору...">
         </div>
       </div>
 
       <div id="booksGrid" class="books-grid">
-         <p style="text-align: center; width: 100%;">Загрузка книг...</p>
+         <!-- Книги загрузятся сюда -->
       </div>
     </div>
   </main>
@@ -78,36 +140,20 @@
   <script>
     const API_URL = "http://localhost:5283/api";
     let allBooks = [];
-    let myBookIds = []; // Здесь будем хранить ID книг, которые уже у юзера
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
-        
-        // 1. Если залогинен, сначала узнаем, какие книги уже есть на полке
-        if (token) {
-            try {
-                const res = await fetch(`${API_URL}/library/my-books`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const myBooks = await res.json();
-                    myBookIds = myBooks.map(b => b.id);
-                }
-            } catch (e) { console.error("Ошибка загрузки полки", e); }
-        }
-
-        // 2. Загружаем весь каталог
-        fetchBooks();
-    });
+    document.addEventListener('DOMContentLoaded', fetchBooks);
 
     async function fetchBooks() {
         const grid = document.getElementById('booksGrid');
+        grid.innerHTML = '<p style="text-align: center; width: 100%;">Открываем архивы...</p>';
+
         try {
             const response = await fetch(`${API_URL}/books`);
+            if (!response.ok) throw new Error();
             allBooks = await response.json();
             renderBooks(allBooks);
         } catch (error) {
-            grid.innerHTML = '<p style="color:red;">Ошибка связи с сервером.</p>';
+            grid.innerHTML = '<p style="color:red; text-align: center; width: 100%;">Ошибка связи с сервером. Пожалуйста, убедитесь, что бэкенд запущен.</p>';
         }
     }
 
@@ -116,69 +162,36 @@
         grid.innerHTML = '';
 
         if (books.length === 0) {
-            grid.innerHTML = '<p>Книг не найдено.</p>';
+            grid.innerHTML = '<p style="text-align: center; width: 100%;">Книги не найдены.</p>';
             return;
         }
 
-        books.forEach(book => {
-            const isBorrowed = myBookIds.includes(book.id);
-            const imageHtml = book.coverImage 
-                ? `<img src="${book.coverImage}" class="book-cover">` 
-                : `<div class="book-cover">📖</div>`;
-
+        books.forEach((book, index) => {
             const card = document.createElement('div');
-            card.className = 'book-card';
+            card.className = 'book-card fade-in';
+            card.style.animationDelay = `${index * 0.05}s`; // Плавное появление по очереди
+            
+            // Если нет обложки, используем стильную заглушку
+            const coverSrc = (book.coverImage && book.coverImage.length > 5) 
+                ? book.coverImage 
+                : 'assets/images/placeholder-book.jpg';
+
             card.innerHTML = `
-                ${imageHtml}
-                <div class="book-info">
-                    <h3 class="book-title">${book.title}</h3>
-                    <p class="book-author">${book.author}</p>
-                    <div class="book-footer">
-                        <button class="btn btn-primary btn-small btn-full" 
-                            onclick="takeBook(${book.id}, '${book.title.replace(/'/g, "\\'")}')"
-                            ${isBorrowed ? 'disabled style="opacity:0.5"' : ''}>
-                            ${isBorrowed ? 'В полке ✓' : 'Взять'}
-                        </button>
-                    </div>
+                <div class="book-cover-wrapper" onclick="goToDetails(${book.id})">
+                    <img src="${coverSrc}" class="book-cover" alt="${book.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
                 </div>
+                <div class="book-title" onclick="goToDetails(${book.id})">${book.title}</div>
             `;
             grid.appendChild(card);
         });
     }
 
-    // ЛОГИКА "ВЗЯТЬ КНИГУ" (Через Бэкенд)
-    async function takeBook(id, title) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert("Сначала войдите в аккаунт!");
-            window.location.href = "login.html";
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/library/borrow/${id}`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(`Книга "${title}" добавлена!`);
-                myBookIds.push(id); // Добавляем в локальный список
-                renderBooks(allBooks); // Перерисовываем кнопки
-            } else {
-                alert(data.message || "Не удалось взять книгу");
-            }
-        } catch (err) {
-            alert("Ошибка связи с сервером");
-        }
+    // Переход на новую страницу деталей
+    function goToDetails(id) {
+        window.location.href = `book-details.html?id=${id}`;
     }
 
-    // Поиск
+    // Поиск в реальном времени
     document.getElementById('searchInput').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         const filtered = allBooks.filter(b => 
