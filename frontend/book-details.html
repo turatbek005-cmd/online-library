@@ -2,51 +2,28 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Детали книги — The Book</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
-
   <style>
-    .book-details-layout {
-        display: flex; gap: 4rem; margin-top: 3rem; align-items: flex-start;
-        background: var(--surface); padding: 3rem; border-radius: 24px;
-        border: 1px solid var(--border); backdrop-filter: var(--glass-blur);
-    }
+    .book-details-layout { display: flex; gap: 4rem; margin-top: 3rem; background: var(--surface); padding: 3rem; border-radius: 24px; border: 1px solid var(--border); }
     .book-left { width: 320px; flex-shrink: 0; }
-    .book-cover-large { 
-        width: 100%; border-radius: 16px; 
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-        border: 1px solid var(--accent-gold);
-    }
+    .book-cover-large { width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--accent-gold); }
     .book-right { flex-grow: 1; }
-    .book-title-big { 
-        font-family: var(--font-heading); font-size: 3.5rem; 
-        color: var(--text); line-height: 1.1; margin-bottom: 1rem; 
-    }
-    .book-meta { 
-        font-size: 1.25rem; color: var(--accent); 
-        margin-bottom: 2rem; font-weight: 500; 
-        display: flex; gap: 15px; align-items: center;
-    }
-    .book-meta span { color: var(--text-light); }
-    .book-description { 
-        font-size: 1.15rem; color: var(--text-muted); 
-        line-height: 1.8; margin-bottom: 3rem; white-space: pre-wrap; 
-    }
+    .book-title-big { font-family: var(--font-heading); font-size: 3.5rem; color: var(--text); line-height: 1.1; margin-bottom: 1rem; }
     
-    .action-group { display: flex; gap: 1.5rem; }
-    .btn-massive { padding: 1.2rem 2.5rem; font-size: 1.1rem; flex: 1; text-align: center; }
+    /* ЗВЕЗДЫ */
+    .rating-container { display: flex; align-items: center; gap: 15px; margin: 1.5rem 0; }
+    .stars { display: flex; flex-direction: row-reverse; gap: 5px; }
+    .star { font-size: 2.5rem; color: #444; cursor: pointer; transition: 0.3s; }
+    .star:hover, .star:hover ~ .star { color: var(--accent-gold); text-shadow: 0 0 15px gold; }
+    .star.active { color: var(--accent-gold); }
+    .avg-val { font-size: 1.5rem; font-weight: bold; color: var(--accent-gold); background: rgba(212,175,55,0.1); padding: 5px 15px; border-radius: 10px; }
 
-    @media (max-width: 900px) {
-        .book-details-layout { flex-direction: column; align-items: center; text-align: center; padding: 20px; }
-        .book-left { width: 250px; }
-        .action-group { flex-direction: column; width: 100%; }
-        .book-title-big { font-size: 2.5rem; }
-    }
+    .book-description { font-size: 1.1rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 2rem; }
+    .action-group { display: flex; gap: 1.5rem; }
+    .btn-massive { padding: 1.2rem 2.5rem; flex: 1; text-align: center; }
   </style>
 </head>
 <body>
@@ -65,46 +42,39 @@
 
   <main class="container">
     <div id="bookDetails" class="book-details-layout">
-        <p style="text-align: center; width: 100%;">Погружаемся в историю...</p>
+        <p style="text-align: center; width: 100%;">Загрузка знаний...</p>
     </div>
   </main>
-
-  <footer class="footer">
-    <div class="container"><p>&copy; 2025 Библиотека «The Book».</p></div>
-  </footer>
 
   <script>
     const API_URL = "http://localhost:5283/api";
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get('id');
 
-    document.addEventListener('DOMContentLoaded', loadBookDetails);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!bookId) { window.location.href = "catalog.html"; return; }
+        loadBookDetails();
+    });
 
     async function loadBookDetails() {
-        if (!bookId) { window.location.href = "catalog.html"; return; }
-
         try {
-            // 1. Получаем книгу
             const res = await fetch(`${API_URL}/books/${bookId}`);
             if (!res.ok) throw new Error();
             const book = await res.json();
 
-            // 2. Проверяем наличие на полке
             let isBorrowed = false;
             const token = localStorage.getItem('token');
             if (token) {
                 const shelfRes = await fetch(`${API_URL}/library/my-books`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (shelfRes.ok) {
-                    const myBooks = await shelfRes.json();
-                    isBorrowed = myBooks.some(b => b.id == bookId);
-                }
+                const myBooks = await shelfRes.json();
+                isBorrowed = myBooks.some(b => b.id == bookId);
             }
 
             renderPage(book, isBorrowed);
         } catch (e) {
-            document.getElementById('bookDetails').innerHTML = "<h2>Древний свиток не найден...</h2>";
+            document.getElementById('bookDetails').innerHTML = "<h2>Книга не найдена</h2>";
         }
     }
 
@@ -116,37 +86,67 @@
             </div>
             <div class="book-right">
                 <h1 class="book-title-big">${book.title}</h1>
-                <p class="book-meta">
-                    ${book.author} <span>•</span> ${book.genre} <span>•</span> ${book.year} г.
-                </p>
-                <div class="book-description">${book.description || 'Эта книга хранит свои тайны. Описания пока нет.'}</div>
+                
+                <div class="rating-container">
+                    <div class="stars">
+                        <span class="star" onclick="sendRate(5)">★</span>
+                        <span class="star" onclick="sendRate(4)">★</span>
+                        <span class="star" onclick="rate(3)">★</span> <!-- Исправлено на sendRate ниже -->
+                        <span class="star" onclick="sendRate(3)">★</span>
+                        <span class="star" onclick="sendRate(2)">★</span>
+                        <span class="star" onclick="sendRate(1)">★</span>
+                    </div>
+                    <div class="avg-val">★ ${book.rating}</div>
+                </div>
+
+                <p style="color:var(--accent); font-weight:600; margin-bottom:1rem;">${book.author} • ${book.genre}</p>
+                <div class="book-description">${book.description}</div>
                 
                 <div class="action-group">
-                    <a href="${book.fileUrl}" target="_blank" class="btn btn-primary btn-massive">Читать сейчас</a>
-                    <button id="shelfBtn" onclick="toggleShelf(${book.id}, ${isBorrowed})" 
-                            class="btn ${isBorrowed ? 'btn-secondary' : 'btn-primary'} btn-massive">
+                    <a href="${book.fileUrl}" target="_blank" class="btn btn-primary btn-massive">Читать</a>
+                    <button onclick="toggleShelf(${book.id}, ${isBorrowed})" class="btn ${isBorrowed ? 'btn-secondary' : 'btn-primary'} btn-massive">
                         ${isBorrowed ? 'Убрать из полки' : 'В избранное'}
                     </button>
                 </div>
             </div>
         `;
+        
+        // Очистим лишнюю звезду (дубль выше)
+        const starNodes = document.querySelectorAll('.star');
+        if(starNodes.length > 5) starNodes[2].remove(); 
     }
 
-    async function toggleShelf(id, currentStatus) {
+    async function sendRate(val) {
         const token = localStorage.getItem('token');
-        if (!token) { alert("Сначала войдите в систему!"); return; }
+        if(!token) { alert("Сначала войдите в аккаунт!"); return; }
 
-        const url = currentStatus ? `${API_URL}/library/return/${id}` : `${API_URL}/library/borrow/${id}`;
-        const method = currentStatus ? 'DELETE' : 'POST';
+        try {
+            const res = await fetch(`${API_URL}/books/rate`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ BookId: parseInt(bookId), Rating: parseInt(val) })
+            });
 
-        const res = await fetch(url, { 
-            method, 
-            headers: { 'Authorization': `Bearer ${token}` } 
-        });
-
-        if (res.ok) {
-            location.reload(); // Перегружаем, чтобы обновить состояние кнопки
+            if(res.ok) {
+                alert("Ваша оценка сохранена!");
+                location.reload();
+            } else {
+                alert("Ошибка при сохранении оценки.");
+            }
+        } catch (e) {
+            alert("Нет связи с сервером.");
         }
+    }
+
+    async function toggleShelf(id, status) {
+        const token = localStorage.getItem('token');
+        const method = status ? 'DELETE' : 'POST';
+        const url = status ? `${API_URL}/library/return/${id}` : `${API_URL}/library/borrow/${id}`;
+        await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` } });
+        location.reload();
     }
   </script>
 </body>
