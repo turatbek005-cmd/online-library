@@ -173,19 +173,31 @@ if (loginForm) {
 
                 const card = document.createElement('div');
                 card.className = 'book-card fade-in';
+                
+                // Вот здесь мы добавляем кнопку ЧИТАТЬ
                 card.innerHTML = `
                     ${image}
                     <div class="book-info">
                         <h3 class="book-title">${book.title}</h3>
                         <p class="book-author">${book.author}</p>
-                        <div class="book-footer">
-                            <button class="btn btn-primary btn-small btn-full" 
+                        
+                        <div class="book-footer" style="display: flex; gap: 10px; margin-top: auto;">
+                            <!-- Кнопка ВЗЯТЬ -->
+                            <button class="btn btn-secondary btn-small" style="flex: 1;" 
                                 onclick="takeBook(${book.id}, '${book.title.replace(/'/g, "\\'")}')">
                                 Взять
                             </button>
+
+                            <!-- Кнопка ЧИТАТЬ (Новая) -->
+                            <a href="${book.fileUrl}" target="_blank" rel="noreferrer" 
+                               class="btn btn-primary btn-small" 
+                               style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                                Читать
+                            </a>
                         </div>
                     </div>
                 `;
+                
                 container.appendChild(card);
             });
 

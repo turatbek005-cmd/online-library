@@ -7,38 +7,98 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- СТИЛИ -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
 
   <style>
-    /* Стили для каталога */
-    .catalog-header { text-align: center; margin: 2rem 0 3rem; }
-    .search-bar { max-width: 500px; margin: 0 auto 1.5rem; display: flex; gap: 10px; }
-    .search-input { flex: 1; padding: 0.8rem 1.5rem; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+    /* --- ШАПКА КАТАЛОГА --- */
+    .catalog-header { text-align: center; margin: 3rem 0; }
+    .page-title { font-family: var(--font-heading); font-size: 3rem; color: var(--text); margin-bottom: 1.5rem; }
     
+    .search-bar { max-width: 600px; margin: 0 auto 2rem; position: relative; }
+    .search-input { 
+        width: 100%; padding: 1rem 2rem; border-radius: 50px; 
+        border: 1px solid var(--border); background: var(--surface); 
+        color: var(--text); font-size: 1rem; transition: all 0.3s;
+        box-shadow: var(--shadow);
+    }
+    .search-input:focus { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+
+    /* --- СЕТКА КНИГ (КОМПАКТНАЯ) --- */
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 2rem;
-      min-height: 200px; /* Чтобы видно было загрузку */
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Узкие карточки */
+      gap: 2.5rem;
+      padding-bottom: 5rem;
     }
 
+    /* --- КАРТОЧКА КНИГИ (ТОЛЬКО ФОТО И НАЗВАНИЕ) --- */
     .book-card {
-      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .book-cover-wrapper {
+      width: 100%;
+      aspect-ratio: 2 / 3; /* Классический книжный формат */
       border-radius: 12px;
       overflow: hidden;
+      background: #1a1a1a;
       border: 1px solid var(--border);
-      transition: transform 0.3s;
-      display: flex; flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.4s ease;
     }
-    .book-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-    .book-cover { height: 320px; width: 100%; object-fit: cover; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
-    .book-info { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
-    .book-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
-    .book-author { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
-    .book-footer { margin-top: auto; }
+
+    .book-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+
+    .book-title {
+    margin-top: 1rem;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+    /* Универсальная обрезка */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Добавили стандартное свойство */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+    /* ЭФФЕКТ ПРИ НАВЕДЕНИИ */
+    .book-card:hover .book-cover-wrapper {
+      transform: translateY(-8px);
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); /* Золотистое свечение */
+    }
+
+    .book-card:hover .book-cover {
+      transform: scale(1.05);
+    }
+
+    .book-card:hover .book-title {
+      color: var(--accent-gold);
+    }
+
+    /* Анимация появления */
+    .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 480px) {
+        .books-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
+        .book-title { font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -60,21 +120,16 @@
 
   <main>
     <div class="container">
-      
       <div class="catalog-header">
         <h1 class="page-title">Библиотека знаний</h1>
-        
-        <!-- ПОИСК -->
         <div class="search-bar">
-          <input type="text" id="searchInput" class="search-input" placeholder="Поиск книги...">
+          <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию или автору...">
         </div>
       </div>
 
-      <!-- ВАЖНО: ID должен быть "booksGrid", скрипт ищет именно его -->
       <div id="booksGrid" class="books-grid">
-         <p style="text-align: center; width: 100%; grid-column: 1/-1; color: var(--text-muted);">Загрузка книг...</p>
+         <!-- Книги загрузятся сюда -->
       </div>
-
     </div>
   </main>
 
@@ -82,139 +137,69 @@
     <div class="container"><p>&copy; 2025 Библиотека «The Book».</p></div>
   </footer>
 
-  <!-- СКРИПТ КАТАЛОГА -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // 1. НАСТРОЙКИ
-        const API_URL = "http://localhost:5283/api"; // <-- ПРОВЕРЬ ПОРТ!
-        let allBooks = [];
+    const API_URL = "http://localhost:5283/api";
+    let allBooks = [];
 
-        // 2. ЗАГРУЗКА
-        fetchBooks();
+    document.addEventListener('DOMContentLoaded', fetchBooks);
 
-        async function fetchBooks() {
-            const grid = document.getElementById('booksGrid');
-            if (!grid) {
-                console.error("ОШИБКА: Не найден элемент с id='booksGrid'");
-                return;
-            }
+    async function fetchBooks() {
+        const grid = document.getElementById('booksGrid');
+        grid.innerHTML = '<p style="text-align: center; width: 100%;">Открываем архивы...</p>';
 
-            try {
-                const response = await fetch(`${API_URL}/books`);
-                if (!response.ok) throw new Error("Ошибка сети");
-                
-                const data = await response.json();
-                allBooks = data; // Сохраняем для поиска
-
-                renderBooks(allBooks);
-                
-            } catch (error) {
-                console.error(error);
-                grid.innerHTML = '<p style="text-align: center; color: red;">Не удалось загрузить книги. Проверьте, запущен ли сервер.</p>';
-            }
+        try {
+            const response = await fetch(`${API_URL}/books`);
+            if (!response.ok) throw new Error();
+            allBooks = await response.json();
+            renderBooks(allBooks);
+        } catch (error) {
+            grid.innerHTML = '<p style="color:red; text-align: center; width: 100%;">Ошибка связи с сервером. Пожалуйста, убедитесь, что бэкенд запущен.</p>';
         }
+    }
 
-        // 3. ОТРИСОВКА
-        function renderBooks(books) {
-            const grid = document.getElementById('booksGrid');
-            grid.innerHTML = '';
+    function renderBooks(books) {
+        const grid = document.getElementById('booksGrid');
+        grid.innerHTML = '';
 
-            if (books.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; width: 100%;">Книг не найдено.</p>';
-                return;
-            }
-
-            books.forEach(book => {
-                // Если нет картинки, ставим заглушку
-                let imageHtml = `<div class="book-cover">📖</div>`;
-                if (book.coverImage && book.coverImage.length > 5) {
-                    imageHtml = `<img src="${book.coverImage}" alt="${book.title}" class="book-cover">`;
-                }
-
-                // Проверяем, взята ли книга
-                const isBorrowed = checkIsBorrowed(book.id);
-
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.innerHTML = `
-                    ${imageHtml}
-                    <div class="book-info">
-                        <h3 class="book-title">${book.title}</h3>
-                        <p class="book-author">${book.author}</p>
-                        <div class="book-footer">
-                            <button class="btn btn-primary btn-small btn-full" 
-                                onclick="takeBook(${book.id}, '${escapeHtml(book.title)}', '${escapeHtml(book.author)}', '${escapeHtml(book.fileUrl)}')"
-                                ${isBorrowed ? 'disabled style="opacity:0.5"' : ''}>
-                                ${isBorrowed ? 'В полке ✓' : 'Взять'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // 4. ПОИСК
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const val = e.target.value.toLowerCase();
-                const filtered = allBooks.filter(b => 
-                    b.title.toLowerCase().includes(val) || 
-                    b.author.toLowerCase().includes(val)
-                );
-                renderBooks(filtered);
-            });
-        }
-    });
-
-    // 5. ЛОГИКА "ВЗЯТЬ КНИГУ" (Глобальная)
-    function takeBook(id, title, author, fileUrl) {
-        // Проверка входа
-        const user = localStorage.getItem('user');
-        if (!user) {
-            alert("Сначала войдите в аккаунт!");
-            window.location.href = "login.html";
+        if (books.length === 0) {
+            grid.innerHTML = '<p style="text-align: center; width: 100%;">Книги не найдены.</p>';
             return;
         }
 
-        let borrowed = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
-        
-        if (borrowed.some(b => b.id == id)) {
-            alert("Эта книга уже у вас!");
-            return;
-        }
+        books.forEach((book, index) => {
+            const card = document.createElement('div');
+            card.className = 'book-card fade-in';
+            card.style.animationDelay = `${index * 0.05}s`; // Плавное появление по очереди
+            
+            // Если нет обложки, используем стильную заглушку
+            const coverSrc = (book.coverImage && book.coverImage.length > 5) 
+                ? book.coverImage 
+                : 'assets/images/placeholder-book.jpg';
 
-        borrowed.push({
-            id: id,
-            title: title,
-            author: author,
-            file_url: fileUrl,
-            date: new Date().toLocaleDateString('ru-RU')
+            card.innerHTML = `
+                <div class="book-cover-wrapper" onclick="goToDetails(${book.id})">
+                    <img src="${coverSrc}" class="book-cover" alt="${book.title}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
+                </div>
+                <div class="book-title" onclick="goToDetails(${book.id})">${book.title}</div>
+            `;
+            grid.appendChild(card);
         });
-
-        localStorage.setItem('borrowedBooks', JSON.stringify(borrowed));
-        alert(`Книга "${title}" добавлена!`);
-        
-        // Обновляем кнопку без перезагрузки
-        location.reload(); 
     }
 
-    function checkIsBorrowed(id) {
-        let borrowed = JSON.parse(localStorage.getItem('borrowedBooks') || '[]');
-        return borrowed.some(b => b.id == id);
+    // Переход на новую страницу деталей
+    function goToDetails(id) {
+        window.location.href = `book-details.html?id=${id}`;
     }
 
-    // Вспомогательная функция для безопасности кавычек
-    function escapeHtml(text) {
-        if (!text) return "";
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+    // Поиск в реальном времени
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = allBooks.filter(b => 
+            b.title.toLowerCase().includes(val) || 
+            b.author.toLowerCase().includes(val)
+        );
+        renderBooks(filtered);
+    });
   </script>
 </body>
 </html>
