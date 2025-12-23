@@ -32,32 +32,34 @@
           <h1 class="page-title">Регистрация</h1>
           <p>Станьте частью нашего клуба читателей</p>
           
-          <form class="form" action="login.html">
+          <!-- УБРАЛИ action, ДОБАВИЛИ id="registerForm" -->
+          <form class="form" id="registerForm">
             <div class="form-group">
-              <label for="fullname" class="form-label">Имя и Фамилия</label>
-              <input type="text" id="fullname" class="form-input" placeholder="Иван Иванов" required>
+              <label for="username" class="form-label">Имя пользователя</label>
+              <!-- ПОМЕНЯЛИ id c fullname на username -->
+              <input type="text" id="username" class="form-input" placeholder="Иван Иванов" required autocomplete="username">
             </div>
 
             <div class="form-group">
               <label for="email" class="form-label">Email</label>
-              <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+              <input type="email" id="email" class="form-input" placeholder="name@example.com" required autocomplete="email">
             </div>
             
             <div class="form-group">
               <label for="password" class="form-label">Пароль</label>
-              <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+              <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
             </div>
 
             <div class="form-group">
                 <label for="confirm" class="form-label">Повторите пароль</label>
-                <input type="password" id="confirm" class="form-input" placeholder="••••••••" required>
+                <input type="password" id="confirm" class="form-input" placeholder="••••••••" required autocomplete="new-password">
             </div>
             
             <button type="submit" class="btn btn-primary btn-full">Создать аккаунт</button>
           </form>
           
-          <div class="auth-footer">
-            <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
+          <div class="auth-footer" style="margin-top: 20px; text-align: center;">
+            <p>Уже есть аккаунт? <a href="login.html" style="color: var(--accent); font-weight: bold;">Войти</a></p>
           </div>
         </div>
       </div>
@@ -69,5 +71,8 @@
       <p>&copy; 2025 Библиотека «The Book».</p>
     </div>
   </footer>
+
+  <!-- ВАЖНО: ПОДКЛЮЧАЕМ СКРИПТ -->
+  <script src="script.js"></script>
 </body>
 </html>
