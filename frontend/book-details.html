@@ -47,6 +47,18 @@
     </div>
   </main>
 
+    <!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
+    <div id="appModal" class="modal-overlay">
+        <div class="modal-window">
+            <span id="modalIcon" class="modal-icon">📚</span>
+            <h3 id="modalTitle" class="modal-title">Заголовок</h3>
+            <p id="modalText" class="modal-text">Текст сообщения...</p>
+            <div id="modalActions" class="modal-actions">
+                <!-- Кнопки будут генерироваться через JS -->
+            </div>
+        </div>
+    </div>
+
   <script>
     const API_URL = "http://localhost:5283/api";
     const params = new URLSearchParams(window.location.search);
@@ -57,6 +69,45 @@
         loadBookDetails();
     });
 
+    // === ФУНКЦИИ МОДАЛЬНОГО ОКНА (ОБЯЗАТЕЛЬНО) ===
+    function showModal({ title, text, icon, onConfirm, showCancel = true }) {
+        const modal = document.getElementById('appModal');
+        // Проверка на случай, если HTML забыли вставить
+        if(!modal) { alert(text); return; }
+
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalText').innerText = text;
+        document.getElementById('modalIcon').innerText = icon || '🔔';
+        
+        const actionsEl = document.getElementById('modalActions');
+        actionsEl.innerHTML = '';
+
+        if (showCancel) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn-modal btn-cancel';
+            cancelBtn.innerText = 'Отмена';
+            cancelBtn.onclick = closeModal;
+            actionsEl.appendChild(cancelBtn);
+        }
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn-modal btn-confirm';
+        confirmBtn.innerText = 'OK';
+        confirmBtn.onclick = () => {
+            if (onConfirm) onConfirm();
+            closeModal();
+        };
+        actionsEl.appendChild(confirmBtn);
+
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('appModal');
+        if(modal) modal.classList.remove('active');
+    }
+
+    // === ОСНОВНАЯ ЛОГИКА ===
     async function loadBookDetails() {
         try {
             const res = await fetch(`${API_URL}/books/${bookId}`);
@@ -66,16 +117,20 @@
             let isBorrowed = false;
             const token = localStorage.getItem('token');
             if (token) {
-                const shelfRes = await fetch(`${API_URL}/library/my-books`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const myBooks = await shelfRes.json();
-                isBorrowed = myBooks.some(b => b.id == bookId);
+                try {
+                    const shelfRes = await fetch(`${API_URL}/library/my-books`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if(shelfRes.ok) {
+                        const myBooks = await shelfRes.json();
+                        isBorrowed = myBooks.some(b => b.id == bookId);
+                    }
+                } catch(e) { console.log("Ошибка проверки полки", e); }
             }
 
             renderPage(book, isBorrowed);
         } catch (e) {
-            document.getElementById('bookDetails').innerHTML = "<h2>Книга не найдена</h2>";
+            document.getElementById('bookDetails').innerHTML = "<h2 style='text-align:center'>Книга не найдена</h2>";
         }
     }
 
@@ -92,34 +147,39 @@
                     <div class="stars">
                         <span class="star" onclick="sendRate(5)">★</span>
                         <span class="star" onclick="sendRate(4)">★</span>
-                        <span class="star" onclick="rate(3)">★</span> <!-- Исправлено на sendRate ниже -->
                         <span class="star" onclick="sendRate(3)">★</span>
                         <span class="star" onclick="sendRate(2)">★</span>
                         <span class="star" onclick="sendRate(1)">★</span>
                     </div>
-                    <div class="avg-val">★ ${book.rating}</div>
+                    <div class="avg-val">★ ${book.rating || 0}</div>
                 </div>
 
-                <p style="color:var(--accent); font-weight:600; margin-bottom:1rem;">${book.author} • ${book.genre}</p>
+                <p style="color:var(--text); font-weight:600; margin-bottom:1rem;">${book.author} • ${book.genre}</p>
                 <div class="book-description">${book.description}</div>
                 
                 <div class="action-group">
-                    <a href="${book.fileUrl}" target="_blank" class="btn btn-primary btn-massive">Читать</a>
+                    <a href="${book.fileUrl || '#'}" target="_blank" class="btn btn-primary btn-massive">Читать</a>
                     <button onclick="toggleShelf(${book.id}, ${isBorrowed})" class="btn ${isBorrowed ? 'btn-secondary' : 'btn-primary'} btn-massive">
                         ${isBorrowed ? 'Убрать из полки' : 'В избранное'}
                     </button>
                 </div>
             </div>
         `;
-        
-        // Очистим лишнюю звезду (дубль выше)
-        const starNodes = document.querySelectorAll('.star');
-        if(starNodes.length > 5) starNodes[2].remove(); 
     }
 
     async function sendRate(val) {
         const token = localStorage.getItem('token');
-        if(!token) { alert("Сначала войдите в аккаунт!"); return; }
+        
+        if(!token) { 
+            showModal({
+                title: "Вход не выполнен",
+                text: "Чтобы ставить оценки, нужно войти в аккаунт.",
+                icon: "🔒",
+                showCancel: false,
+                onConfirm: () => window.location.href = 'login.html'
+            });
+            return; 
+        }
 
         try {
             const res = await fetch(`${API_URL}/books/rate`, {
@@ -132,23 +192,51 @@
             });
 
             if(res.ok) {
-                alert("Ваша оценка сохранена!");
-                location.reload();
+                showModal({
+                    title: "Спасибо!",
+                    text: "Ваша оценка успешно сохранена.",
+                    icon: "✨",
+                    showCancel: false,
+                    onConfirm: () => location.reload()
+                });
             } else {
-                alert("Ошибка при сохранении оценки.");
+                showModal({ title: "Ошибка", text: "Не удалось сохранить оценку.", showCancel: false, icon: "❌" });
             }
         } catch (e) {
-            alert("Нет связи с сервером.");
+            showModal({ title: "Ошибка сети", text: "Сервер недоступен.", showCancel: false, icon: "🔌" });
         }
     }
 
     async function toggleShelf(id, status) {
         const token = localStorage.getItem('token');
+        if(!token) {
+             showModal({
+                title: "Вход не выполнен",
+                text: "Войдите, чтобы добавлять книги в избранное.",
+                icon: "🔒",
+                showCancel: false
+            });
+            return;
+        }
+
         const method = status ? 'DELETE' : 'POST';
         const url = status ? `${API_URL}/library/return/${id}` : `${API_URL}/library/borrow/${id}`;
-        await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` } });
-        location.reload();
+        
+        try {
+            const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` } });
+            if(res.ok) {
+                showModal({
+                    title: status ? "Убрано" : "Добавлено",
+                    text: status ? "Книга убрана с полки." : "Книга добавлена в вашу коллекцию!",
+                    icon: status ? "🗑️" : "📚",
+                    showCancel: false,
+                    onConfirm: () => location.reload()
+                });
+            }
+        } catch(e) {
+            console.error(e);
+        }
     }
-  </script>
+</script>
 </body>
 </html>
