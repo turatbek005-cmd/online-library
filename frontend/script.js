@@ -1,19 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // ==========================================
-    // 0. НАСТРОЙКИ (Конфигурация API)
+    // 0. НАСТРОЙКИ (Конфигурация)
     // ==========================================
-    const HOST = "localhost:5283";
-    const API_URL = `http://${HOST}/api`; 
-
-    // Вспомогательная функция для получения токена
-    const getAuthHeader = () => {
-        const token = localStorage.getItem('token');
-        return token ? { 'Authorization': `Bearer ${token}` } : {};
-    };
+    const API_URL = "http://localhost:5283/api"; 
 
     // ==========================================
-    // 1. АНИМАЦИИ И ЖИВОЙ ИНТЕРФЕЙС
+    // 1. ЖИВОЙ ИНТЕРФЕЙС И АНИМАЦИИ
     // ==========================================
     const header = document.querySelector('.header');
     if (header) {
@@ -21,28 +14,26 @@ document.addEventListener('DOMContentLoaded', function() {
             header.classList.toggle('scrolled', window.scrollY > 50);
         });
     }
-    
-    // Плавные переходы для всех кнопок
+
+    // Плавные переходы для кнопок
     document.querySelectorAll('.btn, .nav-link').forEach(el => {
         el.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     });
 
     // ==========================================
-    // 2. АВТОРИЗАЦИЯ (Вход и Регистрация)
+    // 2. АВТОРИЗАЦИЯ (РЕГИСТРАЦИЯ)
     // ==========================================
-
-    // --- РЕГИСТРАЦИЯ ---
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Стоп перезагрузка
-
+            e.preventDefault(); // КРИТИЧНО: отменяет обновление страницы
+            
             const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirm')?.value;
+            const confirm = document.getElementById('confirm').value;
 
-            if (confirm && password !== confirm) {
+            if (password !== confirm) {
                 alert("Пароли не совпадают!");
                 return;
             }
@@ -57,23 +48,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert("Регистрация успешна! Теперь войдите.");
+                    alert("Успешно! Теперь войдите в аккаунт.");
                     window.location.href = "login.html";
                 } else {
                     alert("Ошибка: " + (data.message || "Сбой регистрации"));
                 }
             } catch (error) {
                 console.error("Ошибка сети:", error);
-                alert("Нет связи с сервером!");
+                alert("Сервер не отвечает!");
             }
         });
     }
 
-    // --- ВХОД (LOGIN) ---
+    // ==========================================
+    // 3. АВТОРИЗАЦИЯ (ВХОД)
+    // ==========================================
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Стоп перезагрузка
+            e.preventDefault(); // КРИТИЧНО: отменяет обновление страницы
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -88,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // СОХРАНЯЕМ ВСЁ ПРАВИЛЬНО
+                    // Сохраняем данные для всех страниц
                     localStorage.setItem('token', data.token); 
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
@@ -97,13 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert("Ошибка: " + (data.message || "Неверный логин или пароль"));
                 }
             } catch (error) {
-                alert("Ошибка подключения! Проверьте бэкенд.");
+                console.error(error);
+                alert("Ошибка связи с сервером");
             }
         });
     }
 
     // ==========================================
-    // 3. ПРОФИЛЬ (Отображение данных)
+    // 4. ПРОФИЛЬ (ОТОБРАЖЕНИЕ)
     // ==========================================
     if (window.location.pathname.includes('profile.html')) {
         const userJson = localStorage.getItem('user');
@@ -113,17 +107,13 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = "login.html";
         } else {
             const user = JSON.parse(userJson);
-            // Заполняем поля, если они есть на странице
-            const fields = {
-                'profile-username': user.username,
-                'profile-email': user.email,
-                'profile-emeralds': user.emeralds
-            };
-
-            for (let id in fields) {
-                const el = document.getElementById(id);
-                if (el) el.innerText = fields[id] || "0";
-            }
+            // Заполняем элементы если они есть
+            if (document.getElementById('profile-username')) 
+                document.getElementById('profile-username').innerText = user.username;
+            if (document.getElementById('profile-email')) 
+                document.getElementById('profile-email').innerText = user.email;
+            if (document.getElementById('profile-emeralds')) 
+                document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
         }
     }
 
@@ -137,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // 4. КАТАЛОГ (Компактные карточки)
+    // 5. КАТАЛОГ (ЗАГРУЗКА КНИГ)
     // ==========================================
     if (window.location.pathname.includes('catalog.html')) {
         loadBooks();
@@ -147,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('booksGrid');
         if (!container) return;
 
-        container.innerHTML = '<p style="text-align:center; width:100%; color: var(--text-muted);">Открываем архивы...</p>';
+        container.innerHTML = '<p style="text-align:center; width:100%;">Загрузка знаний...</p>';
 
         try {
             const response = await fetch(`${API_URL}/books`);
@@ -165,10 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.className = 'book-card fade-in';
                 card.style.animationDelay = `${index * 0.05}s`;
                 
-                // Красивая компактная карточка (только фото и название под ним)
+                // Используем новый компактный стиль (только фото и название)
                 card.innerHTML = `
                     <div class="book-cover-wrapper" onclick="window.location.href='book-details.html?id=${book.id}'">
-                        <img src="${book.coverImage || 'assets/images/placeholder-book.jpg'}" 
+                        <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" 
                              class="book-cover" 
                              onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
                     </div>
@@ -180,20 +170,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
         } catch (error) {
-            container.innerHTML = '<p style="text-align:center; color:red;">Ошибка загрузки каталога.</p>';
+            console.error(error);
+            container.innerHTML = '<p style="text-align:center; color:red;">Ошибка сервера.</p>';
         }
     }
 });
 
 // ==========================================
-// 5. ГЛОБАЛЬНЫЕ ФУНКЦИИ (Для работы с БД)
+// 6. ГЛОБАЛЬНАЯ ФУНКЦИЯ: ВЗЯТЬ КНИГУ (ДЛЯ КНОПОК)
 // ==========================================
-
-// Взять книгу на полку
 window.takeBook = async function(bookId, title) {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert("Пожалуйста, войдите в аккаунт!");
+        alert("Сначала войдите в аккаунт!");
         window.location.href = "login.html";
         return;
     }
@@ -211,12 +200,10 @@ window.takeBook = async function(bookId, title) {
 
         if (response.ok) {
             alert(`Книга "${title}" добавлена на вашу полку!`);
-            if (typeof renderBorrowedBooks === 'function') renderBorrowedBooks(); // Обновить если мы в профиле
         } else {
             alert(data.message || "Ошибка");
         }
-
     } catch (error) {
-        alert("Ошибка сервера!");
+        alert("Ошибка связи с сервером!");
     }
 };
