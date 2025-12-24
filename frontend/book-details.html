@@ -2,11 +2,16 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Детали книги — The Book</title>
+  
+  <!-- Заглушка для иконки (чтобы не было ошибки 404 favicon.ico) -->
+  <link rel="icon" href="data:,">
+
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
-  <!-- Подключаем твои стили для комментариев -->
+  <!-- Твой файл стилей для комментариев -->
   <link rel="stylesheet" href="css/commets.css"> 
   
   <style>
@@ -26,7 +31,7 @@
 
     .book-description { font-size: 1.1rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 2rem; }
     .action-group { display: flex; gap: 1.5rem; }
-    .btn-massive { padding: 1.2rem 2.5rem; flex: 1; text-align: center; font-size: 1.1rem; }
+    .btn-massive { padding: 1.2rem 2.5rem; flex: 1; text-align: center; font-size: 1.1rem; cursor: pointer; }
 
     /* Адаптив */
     @media (max-width: 900px) {
@@ -56,7 +61,7 @@
         <p style="text-align: center; width: 100%; color: var(--text-muted);">Загрузка магии...</p>
     </div>
 
-    <!-- СЕКЦИЯ КОММЕНТАРИЕВ (Будет заполнена JS) -->
+    <!-- СЕКЦИЯ КОММЕНТАРИЕВ -->
     <div class="comments-wrapper" style="margin-top: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
         <h3 class="section-title">💬 Обсуждение книги</h3>
         
@@ -84,11 +89,11 @@
       </div>
   </div>
 
-  <!-- ВАЖНО: Подключаем script.js перед нашим скриптом -->
+  <!-- ВАЖНО: Подключаем script.js (путь js/script.js) -->
   <script src="script.js"></script>
 
   <script>
-    // API_URL уже объявлен в script.js, но можно продублировать для надежности локальной области
+    // Локальный URL для этой страницы
     const LOCAL_API_URL = "http://localhost:5283/api"; 
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get('id');
@@ -133,9 +138,18 @@
 
     function renderPage(book, isBorrowed) {
         const container = document.getElementById('bookDetails');
+        
+        // === ИСПРАВЛЕНИЕ: Кнопка Читать вызывает startReadingSession ===
+        // Это запускает таймер наград
+        const readButtonHtml = `
+            <button onclick="startReadingSession('${book.fileUrl || ''}')" class="btn btn-primary btn-massive">
+                Читать онлайн
+            </button>
+        `;
+
         container.innerHTML = `
             <div class="book-left">
-                <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" class="book-cover-large">
+                <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" class="book-cover-large" onerror="this.src='https://via.placeholder.com/300x450?text=No+Cover'">
             </div>
             <div class="book-right">
                 <h1 class="book-title-big">${book.title}</h1>
@@ -148,14 +162,14 @@
                         <span class="star" onclick="sendRate(2)">★</span>
                         <span class="star" onclick="sendRate(1)">★</span>
                     </div>
-                    <div class="avg-val">★ ${book.rating || 0}</div>
+                    <div class="avg-val">★ ${book.rating ? book.rating.toFixed(1) : 0}</div>
                 </div>
 
                 <p style="color:var(--text); font-weight:600; margin-bottom:1rem; font-size: 1.2rem;">${book.author} • ${book.genre || 'Жанр не указан'}</p>
                 <div class="book-description">${book.description || 'Описание отсутствует.'}</div>
                 
                 <div class="action-group">
-                    <a href="${book.fileUrl || '#'}" target="_blank" class="btn btn-primary btn-massive">Читать</a>
+                    ${readButtonHtml}
                     <button onclick="toggleShelf(${book.id}, ${isBorrowed})" class="btn ${isBorrowed ? 'btn-secondary' : 'btn-primary'} btn-massive">
                         ${isBorrowed ? 'Убрать из полки' : 'В избранное'}
                     </button>

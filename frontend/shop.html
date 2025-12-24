@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
-  <!-- Можно оставить shop.css для специфичных стилей сетки -->
   <link rel="stylesheet" href="css/shop.css">
 </head>
 <body>
@@ -28,8 +27,10 @@
     </div>
   </header>
 
+  <!-- ВИДЖЕТ БАЛАНСА -->
   <div class="balance-widget" id="balanceWidget" style="position: fixed; top: 100px; right: 20px; background: var(--surface); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--accent-gold); z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
     <span class="emerald-icon">💎</span>
+    <!-- ID здесь profile-emeralds, и в JS теперь тоже profile-emeralds -->
     <span class="balance-amount" id="profile-emeralds">0</span>
   </div>
 
@@ -40,14 +41,13 @@
         Приобретайте редкие артефакты для вашей коллекции
       </p>
 
-      <!-- Сюда JS будет вставлять карточки -->
       <div id="shopContent" class="shop-grid">
           <p style="text-align: center; width: 100%;">Загрузка товаров...</p>
       </div>
     </div>
   </main>
 
-  <!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО (генерируется script.js, но можно оставить заглушку) -->
+  <!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
   <div id="appModal" class="modal-overlay">
       <div class="modal-window">
           <span id="modalIcon" class="modal-icon">🔔</span>
@@ -65,10 +65,8 @@
     </div>
   </footer>
 
-  <!-- 1. Сначала ГЛАВНЫЙ скрипт (авторизация, модалки) -->
+  <!-- ИСПРАВЛЕННЫЙ ПУТЬ К СКРИПТУ -->
   <script src="script.js"></script>
-  
-  <!-- 2. Потом скрипт МАГАЗИНА -->
   <script src="js/pages/shop.js"></script>
 </body>
 </html>

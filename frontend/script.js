@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- ВХОД ---
+    // --- ВХОД (С НАГРАДОЙ) ---
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -83,7 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     localStorage.setItem('token', data.token); 
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    window.location.href = "profile.html";
+                    
+                    // Проверка награды за вход
+                    if (data.loginReward) {
+                        showModal({ 
+                            title: "Ежедневная награда!", 
+                            text: data.loginReward, 
+                            icon: "🎁", 
+                            showCancel: false, 
+                            onConfirm: () => window.location.href = "profile.html" 
+                        });
+                    } else {
+                        window.location.href = "profile.html";
+                    }
                 } else {
                     showModal({ title: "Ошибка", text: data.message || "Неверные данные", showCancel: false });
                 }
@@ -112,12 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user || !token) {
             window.location.href = "login.html";
         } else {
-            // Заполняем данные
             document.getElementById('profile-username').innerText = user.username;
             document.getElementById('profile-email').innerText = user.email;
             document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
 
-            // Запускаем функции
             renderStreak(user);        
             loadUserCollection(token); 
             renderBorrowedBooks(token);
@@ -577,11 +587,27 @@ window.postComment = async function() {
             body: JSON.stringify({ bookId: bookId, text: text })
         });
 
+        // Теперь читаем JSON сразу
+        const data = await response.json();
+
         if (response.ok) {
-            input.value = ''; 
-            loadComments(bookId); 
+            input.value = ''; // Очистить
+            loadComments(bookId); // Обновить список
+            
+            if (data.reward && data.reward > 0) {
+                let user = JSON.parse(localStorage.getItem('user'));
+                user.emeralds = (user.emeralds || 0) + data.reward;
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                showModal({ 
+                    title: "Награда! 💎", 
+                    text: data.message || `Вы получили +${data.reward} изумрудов!`, 
+                    icon: "✨", 
+                    showCancel: false 
+                });
+            }
         } else {
-            showModal({ title: "Ошибка", text: "Не удалось отправить комментарий.", showCancel: false });
+            showModal({ title: "Ошибка", text: data.message || "Не удалось отправить.", showCancel: false });
         }
     } catch (e) {
         console.error(e);
@@ -594,13 +620,11 @@ window.postComment = async function() {
 window.buyCard = async function(cardId, price, cardName) {
     const user = JSON.parse(localStorage.getItem('user'));
     
-    // 1. Проверка авторизации
     if (!user) {
         showModal({ title: "Ошибка", text: "Войдите, чтобы покупать карты!", showCancel: false });
         return;
     }
 
-    // 2. Проверка баланса (визуальная)
     if ((user.emeralds || 0) < price) {
         showModal({ 
             title: "Не хватает средств", 
@@ -611,7 +635,6 @@ window.buyCard = async function(cardId, price, cardName) {
         return;
     }
 
-    // 3. Окно подтверждения
     showModal({
         title: "Покупка карты",
         text: `Купить "${cardName}" за ${price} 💎?`,
@@ -621,8 +644,7 @@ window.buyCard = async function(cardId, price, cardName) {
             const API_URL = "http://localhost:5283/api"; 
 
             try {
-                // Отправляем запрос на покупку
-                const response = await fetch(`${API_URL}/shop/buy/${cardId}`, {
+                const response = await fetch(`${API_URL}/shop/buy-card/${cardId}`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -630,11 +652,9 @@ window.buyCard = async function(cardId, price, cardName) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Обновляем баланс
-                    user.emeralds = data.newBalance; 
+                    user.emeralds = data.remainingEmeralds; 
                     localStorage.setItem('user', JSON.stringify(user));
                     
-                    // Обновляем UI, если есть счетчик
                     const gemEl = document.getElementById('profile-emeralds');
                     if(gemEl) gemEl.innerText = user.emeralds;
 
@@ -653,4 +673,72 @@ window.buyCard = async function(cardId, price, cardName) {
             }
         }
     });
+};
+
+// ==========================================
+// 11. СИСТЕМА ЧТЕНИЯ (ТАЙМЕР)
+// ==========================================
+let readingInterval = null;
+
+window.startReadingSession = function(fileUrl) {
+    // 1. Открываем книгу (если ссылка валидная)
+    if (fileUrl && fileUrl !== '#' && fileUrl !== 'null' && fileUrl !== '') {
+        window.open(fileUrl, '_blank');
+    }
+
+    // 2. Если таймер уже идет — не запускаем новый
+    if (readingInterval) {
+        showModal({ title: "Чтение", text: "Таймер уже работает! Продолжайте читать.", icon: "⏱️", showCancel: false });
+        return;
+    }
+
+    // 3. Запускаем таймер
+    showModal({ 
+        title: "Режим чтения 📖", 
+        text: "Таймер запущен! Каждую минуту вы будете получать награды (до 60 мин/день). Не закрывайте эту вкладку.", 
+        showCancel: false 
+    });
+
+    readingInterval = setInterval(async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const API_URL = "http://localhost:5283/api"; // URL должен быть верным
+            const response = await fetch(`${API_URL}/progress/track-time`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Минута засчитана:", data);
+
+                // === ОБНОВЛЕНИЕ UI ===
+                let user = JSON.parse(localStorage.getItem('user'));
+                
+                // 1. Если просто минута (и лимит не исчерпан) — добавляем +1 визуально
+                if (data.minutesRead <= 60) {
+                    user.emeralds = (user.emeralds || 0) + 1;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // Обновляем виджеты на странице (если есть)
+                    const gemEl = document.getElementById('profile-emeralds');
+                    if(gemEl) gemEl.innerText = user.emeralds;
+                }
+
+                // 2. Если выпала РУЛЕТКА (15 минут или недельный бонус)
+                if (data.rewardType && data.rewardType !== 'none') {
+                    showModal({ 
+                        title: "🎁 БОНУС!", 
+                        text: data.message, 
+                        icon: "🎉", 
+                        showCancel: false 
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Ошибка таймера:", e);
+        }
+    }, 60000); // 60000 мс = 1 минута
 };
