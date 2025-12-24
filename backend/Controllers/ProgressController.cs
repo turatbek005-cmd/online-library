@@ -158,8 +158,6 @@ public class ProgressController : ControllerBase
 
         // Выбираем случайную карту этого ранга
         string sql = "SELECT id, name FROM game_cards WHERE rank = @r ORDER BY RANDOM() LIMIT 1";
-        // Если база пустая или карт такого ранга нет, возьмем любую
-        string fallbackSql = "SELECT id, name FROM game_cards ORDER BY RANDOM() LIMIT 1";
 
         var cmdCard = new NpgsqlCommand(sql, conn);
         cmdCard.Parameters.AddWithValue("r", rank);
