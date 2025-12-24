@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 3. ЛОГИКА ПРОФИЛЯ (Запускается только в profile.html)
+    // 3. ЛОГИКА ПРОФИЛЯ
     // ==========================================
     if (document.getElementById('profile-username')) {
         const user = getUser();
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderStreak(user);        
             loadUserCollection(token); 
             renderBorrowedBooks(token);
-            renderCalendar();          
+            renderCalendar(); // Запускает новую функцию ниже
         }
     }
 
@@ -175,13 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const badge = document.getElementById('streak-badge');
         const countEl = document.getElementById('streak-count');
         
-        // Если элементов нет на странице (например, мы не в профиле), выходим
         if (!badge || !countEl) return;
 
-        // Показываем бейдж (в HTML он display: none)
         badge.style.display = 'flex';
 
-        // 1. Стрик потерян?
         if (user.streakLost) {
             badge.className = 'streak-badge fire-lost';
             countEl.innerText = user.savedStreak || 0;
@@ -189,11 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 2. Стрик активен
         const streak = user.streak || 1;
         countEl.innerText = streak;
         
-        // Сброс и установка класса огня
         badge.className = 'streak-badge'; 
         if (streak >= 100) badge.classList.add('fire-lvl-5');
         else if (streak >= 60) badge.classList.add('fire-lvl-5');
@@ -202,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (streak >= 7)  badge.classList.add('fire-lvl-2');
         else                   badge.classList.add('fire-lvl-1');
 
-        // Клик по активному стрику
         badge.onclick = () => {
             const nextTarget = getNextLevelTarget(streak);
             const daysLeft = nextTarget - streak;
@@ -249,15 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // Обновляем данные
                 user.emeralds = data.newEmeralds;
                 user.streak = data.restoredStreak;
                 user.streakLost = false;
                 user.savedStreak = 0;
                 updateUser(user);
 
-                // Обновляем UI
                 document.getElementById('profile-emeralds').innerText = user.emeralds;
                 renderStreak(user);
 
@@ -271,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (Коллекции, Книги)
+    // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
     // ==========================================
     
     async function loadUserCollection(token) {
@@ -336,18 +327,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderCalendar() {
+    // === ИСПРАВЛЕННАЯ ФУНКЦИЯ КАЛЕНДАРЯ ===
+    async function renderCalendar() {
         const calendar = document.getElementById('readingCalendar');
-        if(!calendar) return;
+        if (!calendar) return;
+
+        const token = getToken();
+        let activeDates = [];
+
+        // 1. Загружаем данные с сервера
+        try {
+            // Обращаемся к новому контроллеру ProgressController
+            const response = await fetch(`${API_URL}/progress/activity`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                activeDates = await response.json(); // Ожидаем массив строк ["2025-05-20", ...]
+            }
+        } catch (e) {
+            console.error("Ошибка загрузки календаря:", e);
+        }
+
+        // 2. Рисуем сетку
         const today = new Date();
         let html = '';
-        for(let i=19; i>=0; i--) {
-            const d = new Date(); d.setDate(today.getDate() - i);
-            const isToday = i === 0;
-            const hasActivity = Math.random() > 0.6 || isToday; 
-            let bg = isToday ? 'var(--accent)' : (hasActivity ? 'rgba(212, 175, 55, 0.4)' : 'rgba(139, 69, 19, 0.1)');
-            let color = isToday ? 'white' : (hasActivity ? 'var(--text)' : 'var(--text-light)');
-            html += `<div class="calendar-day" style="background:${bg}; color:${color}">${d.getDate()}</div>`;
+
+        for (let i = 19; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            
+            // Формируем строку YYYY-MM-DD вручную для надежности
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+
+            const isToday = (i === 0);
+            // Если дата есть в списке с сервера ИЛИ это сегодня
+            const isActive = activeDates.includes(dateString) || isToday; 
+
+            // Стилизация
+            let bg = 'rgba(139, 69, 19, 0.1)';
+            let color = 'var(--text-muted)';
+            let border = '1px solid transparent';
+            
+            if (isToday) {
+                bg = '#8B4513'; // Коричневый для "Сегодня"
+                color = '#fff';
+            } else if (isActive) {
+                bg = '#E6DfbF'; // Бежевый для активных дней
+                color = '#5a3a22';
+            }
+
+            html += `
+                <div class="calendar-day" 
+                     style="background:${bg}; color:${color}; border:${border}" 
+                     title="${dateString}">
+                     ${d.getDate()}
+                </div>`;
         }
         calendar.innerHTML = html;
     }
@@ -357,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     window.showModal = function({ title, text, icon, onConfirm, showCancel = true }) {
         let modal = document.getElementById('appModal');
-        // Создаем модалку, если её нет в HTML
         if (!modal) {
             createModalMarkup();
             modal = document.getElementById('appModal');
