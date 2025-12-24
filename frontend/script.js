@@ -169,9 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 4.1. ДЕТАЛИ КНИГИ И КОММЕНТАРИИ (НОВОЕ)
+    // 4.1. ДЕТАЛИ КНИГИ И КОММЕНТАРИИ
     // ==========================================
-    // Если мы на странице с комментариями, запускаем их загрузку
     if (document.getElementById('commentsList')) {
         const urlParams = new URLSearchParams(window.location.search);
         const bookId = urlParams.get('id');
@@ -517,7 +516,6 @@ window.handleReturnBook = function(bookId) {
 // 9. КОММЕНТАРИИ (НОВОЕ)
 // ==========================================
 
-// Загрузка комментариев
 async function loadComments(bookId) {
     const API_URL = "http://localhost:5283/api";
     const list = document.getElementById('commentsList');
@@ -551,7 +549,6 @@ async function loadComments(bookId) {
     }
 }
 
-// Отправка комментария (Доступна через onclick)
 window.postComment = async function() {
     const API_URL = "http://localhost:5283/api";
     const urlParams = new URLSearchParams(window.location.search);
@@ -581,12 +578,79 @@ window.postComment = async function() {
         });
 
         if (response.ok) {
-            input.value = ''; // Очистить
-            loadComments(bookId); // Обновить список
+            input.value = ''; 
+            loadComments(bookId); 
         } else {
             showModal({ title: "Ошибка", text: "Не удалось отправить комментарий.", showCancel: false });
         }
     } catch (e) {
         console.error(e);
     }
+};
+
+// ==========================================
+// 10. МАГАЗИН (ПОКУПКА КАРТ)
+// ==========================================
+window.buyCard = async function(cardId, price, cardName) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    // 1. Проверка авторизации
+    if (!user) {
+        showModal({ title: "Ошибка", text: "Войдите, чтобы покупать карты!", showCancel: false });
+        return;
+    }
+
+    // 2. Проверка баланса (визуальная)
+    if ((user.emeralds || 0) < price) {
+        showModal({ 
+            title: "Не хватает средств", 
+            text: `У вас ${user.emeralds} 💎, а нужно ${price}.`, 
+            icon: "💎", 
+            showCancel: false 
+        });
+        return;
+    }
+
+    // 3. Окно подтверждения
+    showModal({
+        title: "Покупка карты",
+        text: `Купить "${cardName}" за ${price} 💎?`,
+        icon: "🛒",
+        onConfirm: async () => {
+            const token = localStorage.getItem('token');
+            const API_URL = "http://localhost:5283/api"; 
+
+            try {
+                // Отправляем запрос на покупку
+                const response = await fetch(`${API_URL}/shop/buy/${cardId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Обновляем баланс
+                    user.emeralds = data.newBalance; 
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // Обновляем UI, если есть счетчик
+                    const gemEl = document.getElementById('profile-emeralds');
+                    if(gemEl) gemEl.innerText = user.emeralds;
+
+                    showModal({ 
+                        title: "Успешно!", 
+                        text: `Вы получили карту: ${cardName}!`, 
+                        icon: "✨", 
+                        showCancel: false 
+                    });
+                } else {
+                    showModal({ title: "Ошибка", text: data.message || "Не удалось купить.", showCancel: false });
+                }
+            } catch (e) {
+                console.error(e);
+                showModal({ title: "Ошибка", text: "Сервер недоступен.", showCancel: false });
+            }
+        }
+    });
 };
