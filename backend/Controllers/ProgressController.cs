@@ -13,6 +13,43 @@ public class ProgressController : ControllerBase
     private readonly IConfiguration _config;
     public ProgressController(IConfiguration config) => _config = config;
 
+    // === НОВЫЙ МЕТОД: ПОЛУЧЕНИЕ ИСТОРИИ ДЛЯ КАЛЕНДАРЯ ===
+    [HttpGet("activity")]
+    public async Task<IActionResult> GetActivityLog()
+    {
+        // 1. Получаем ID юзера
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
+        var userId = int.Parse(userIdStr);
+        
+        string connStr = _config.GetConnectionString("DefaultConnection")!;
+        await using var conn = new NpgsqlConnection(connStr);
+        await conn.OpenAsync();
+
+        var dates = new List<string>();
+
+        // 2. Берем даты за последние 30 дней, когда visited_library = true
+        // Используем to_char для удобного формата YYYY-MM-DD
+        string sql = @"
+            SELECT to_char(date, 'YYYY-MM-DD') as date_str 
+            FROM daily_progress 
+            WHERE user_id = @uid 
+              AND visited_library = true 
+              AND date > CURRENT_DATE - INTERVAL '30 days'";
+
+        await using var command = new NpgsqlCommand(sql, conn);
+        command.Parameters.AddWithValue("uid", userId);
+        
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            dates.Add(reader.GetString(0)); // Добавляем дату в список
+        }
+
+        return Ok(dates); // Отправляем массив дат на фронтенд
+    }
+
+    // === МЕТОД: ЗАСЧИТАТЬ МИНУТУ ЧТЕНИЯ + РУЛЕТКА ===
     [HttpPost("track-time")]
     public async Task<IActionResult> TrackTime()
     {
@@ -25,20 +62,19 @@ public class ProgressController : ControllerBase
         string rewardType = "none"; // "gems" или "card"
         string rewardValue = "";    // Название карты или кол-во денег
 
-        // 1. ОБНОВЛЕНИЕ STREAK (Ударный режим)
-        // (Оставляем ту же логику проверки дат, сократил для краткости - она у тебя есть)
-        // ...Представим, что тут код проверки дат и обновления Streak...
-        
-        // Для примера, просто берем текущий стрик:
+        // 1. Получаем текущий стрик (для проверки бонусов)
         int streak = 0;
         var cmdStreak = new NpgsqlCommand("SELECT streak_current FROM users WHERE id = @id", conn);
         cmdStreak.Parameters.AddWithValue("id", userId);
         streak = (int)(await cmdStreak.ExecuteScalarAsync() ?? 0);
 
         // 2. ОБНОВЛЕНИЕ ВРЕМЕНИ И ПРОВЕРКА НАГРАД
+        // Добавляем +1 минуту, или создаем запись, если её нет
         string sqlDaily = @"
-            INSERT INTO daily_progress (user_id, date, minutes_read) VALUES (@uid, CURRENT_DATE, 1)
-            ON CONFLICT (user_id, date) DO UPDATE SET minutes_read = daily_progress.minutes_read + 1
+            INSERT INTO daily_progress (user_id, date, minutes_read, visited_library) 
+            VALUES (@uid, CURRENT_DATE, 1, true)
+            ON CONFLICT (user_id, date) 
+            DO UPDATE SET minutes_read = daily_progress.minutes_read + 1, visited_library = true
             RETURNING minutes_read, quest_time_claimed, weekly_bonus_claimed";
 
         var cmdDaily = new NpgsqlCommand(sqlDaily, conn);

@@ -1,0 +1,34 @@
+.comment-card {
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    animation: fadeIn 0.3s ease;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.comment-author {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.comment-date {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.comment-text {
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.comment-card.my-comment {
+    border-color: var(--accent);
+    background: rgba(212, 175, 55, 0.05); /* Легкий золотистый оттенок для своих */
+}
