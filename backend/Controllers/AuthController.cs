@@ -22,11 +22,12 @@ public class AuthController : ControllerBase
 
     // РЕГИСТРАЦИЯ
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto request)
+    public async Task<IActionResult> Register([FromBody] RegisterDto request) // Добавили [FromBody]
     {
+        if (request == null || string.IsNullOrEmpty(request.Email)) 
+            return BadRequest(new { message = "Данные не получены" });
+
         string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
-        
-        // Хешируем пароль
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         try
@@ -37,7 +38,7 @@ public class AuthController : ControllerBase
             string sql = "INSERT INTO users (username, email, password_hash, role, emeralds) VALUES (@u, @e, @p, 'user', 50)";
             
             await using var command = new NpgsqlCommand(sql, connection);
-            command.Parameters.AddWithValue("u", request.Username);
+            command.Parameters.AddWithValue("u", request.Username ?? "User");
             command.Parameters.AddWithValue("e", request.Email);
             command.Parameters.AddWithValue("p", passwordHash);
 
@@ -49,21 +50,22 @@ public class AuthController : ControllerBase
             if (ex.SqlState == "23505") 
                 return BadRequest(new { message = "Такой Email уже занят!" });
             
-            return StatusCode(500, $"Ошибка БД: {ex.Message}");
+            return StatusCode(500, new { message = "Ошибка БД: " + ex.MessageText });
         }
     }
 
     // ВХОД
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto request)
+    public async Task<IActionResult> Login([FromBody] LoginDto request) // Добавили [FromBody]
     {
+        if (request == null) return BadRequest(new { message = "Пустой запрос" });
+
         string connectionString = _configuration.GetConnectionString("DefaultConnection")!;
         User? user = null;
 
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
-        // 1. Ищем пользователя
         string sql = "SELECT id, username, email, password_hash, role, emeralds FROM users WHERE email = @e";
         
         await using var command = new NpgsqlCommand(sql, connection);
@@ -84,13 +86,11 @@ public class AuthController : ControllerBase
             };
         }
 
-        // 2. Проверка пароля
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return BadRequest(new { message = "Неверный email или пароль" });
         }
 
-        // 3. Создаем JWT Токен
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes("SUPER_SECRET_KEY_12345_MUST_BE_VERY_LONG_STRING"); 
         
@@ -107,8 +107,6 @@ public class AuthController : ControllerBase
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
-        // 4. ВОЗВРАЩАЕМ ОТВЕТ (ИСПРАВЛЕНО!)
-        // Фронтенд ждет объект "user", поэтому мы упаковываем данные внутрь него.
         return Ok(new 
         { 
             message = "Вход выполнен!",

@@ -1,42 +1,29 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================
-    // 0. НАСТРОЙКИ (ПОРТ БЭКЕНДА)
+    // 0. КОНФИГУРАЦИЯ
     // ==========================================
-    // ❗ ПРОВЕРЬ ПОРТ! (Посмотри в терминале dotnet run)
     const API_URL = "http://localhost:5283/api"; 
 
+    // Утилиты для localStorage
+    const getUser = () => JSON.parse(localStorage.getItem('user'));
+    const getToken = () => localStorage.getItem('token');
+    const updateUser = (newData) => localStorage.setItem('user', JSON.stringify(newData));
+
     // ==========================================
-    // 1. АНИМАЦИИ
+    // 1. ИНТЕРФЕЙС (Header)
     // ==========================================
-    const fadeElements = document.querySelectorAll('.fade-in');
-    const fadeInOnScroll = () => {
-        fadeElements.forEach(element => {
-            const elementTop = element.getBoundingClientRect().top;
-            if (elementTop < window.innerHeight - 150) {
-                element.classList.add('visible');
-            }
-        });
-    };
-    fadeInOnScroll();
-    window.addEventListener('scroll', fadeInOnScroll);
-    
-    // Хедер и переходы
     const header = document.querySelector('.header');
     if (header) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) header.classList.add('scrolled');
-            else header.classList.remove('scrolled');
+            header.classList.toggle('scrolled', window.scrollY > 50);
         });
     }
+
+    // ==========================================
+    // 2. АВТОРИЗАЦИЯ
+    // ==========================================
     
-    document.querySelectorAll('.btn, .nav-link, .book-card')
-        .forEach(el => el.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)');
-
-    // ==========================================
-    // 2. ЛОГИКА БЭКЕНДА (АВТОРИЗАЦИЯ)
-    // ==========================================
-
     // --- РЕГИСТРАЦИЯ ---
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
@@ -45,6 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm').value;
+
+            if (password !== confirm) {
+                showModal({ title: "Ошибка", text: "Пароли не совпадают!", showCancel: false });
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_URL}/auth/register`, {
@@ -53,194 +46,430 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ username, email, password })
                 });
 
-                const data = await response.json();
-
                 if (response.ok) {
-                    alert("Успешно! Теперь войдите.");
-                    window.location.href = "login.html";
+                    showModal({ 
+                        title: "Успех!", 
+                        text: "Регистрация успешна. Войдите в аккаунт.", 
+                        showCancel: false, 
+                        onConfirm: () => window.location.href = "login.html" 
+                    });
                 } else {
-                    alert("Ошибка: " + (data.message || "Сбой регистрации"));
+                    const data = await response.json();
+                    showModal({ title: "Ошибка", text: data.message || "Сбой регистрации", showCancel: false });
                 }
             } catch (error) {
-                console.error(error);
-                alert("Нет связи с сервером!");
+                showModal({ title: "Ошибка", text: "Сервер недоступен", showCancel: false });
             }
         });
     }
 
-    // --- ВХОД (LOGIN) ---
+    // --- ВХОД ---
     const loginForm = document.getElementById('loginForm');
-    // В файле script.js (найди блок loginForm)
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (response.ok) {
-                // ВАЖНО: сохраняем токен и пользователя отдельно
-                localStorage.setItem('token', data.token); 
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                console.log("Токен сохранен:", data.token); // Для проверки в консоли
-                alert("Вход выполнен!");
-                window.location.href = "profile.html";
-            } else {
-                alert(data.message || "Ошибка входа");
+                if (response.ok) {
+                    localStorage.setItem('token', data.token); 
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = "profile.html";
+                } else {
+                    showModal({ title: "Ошибка", text: data.message || "Неверные данные", showCancel: false });
+                }
+            } catch (error) {
+                showModal({ title: "Ошибка", text: "Сервер недоступен", showCancel: false });
             }
-        } catch (error) {
-            console.error(error);
-            alert("Ошибка связи с сервером");
-        }
-    });
-}
-
-    // --- ПРОФИЛЬ (Загрузка данных) ---
-    if (window.location.pathname.includes('profile.html')) {
-        const userJson = localStorage.getItem('user');
-        
-        if (!userJson || userJson === "undefined" || userJson === "null") {
-            window.location.href = "login.html";
-            return;
-        }
-
-        try {
-            const user = JSON.parse(userJson);
-            const usernameEl = document.getElementById('profile-username');
-            const emailEl = document.getElementById('profile-email');
-            const emeraldsEl = document.getElementById('profile-emeralds');
-
-            if (usernameEl) usernameEl.innerText = user.username || "Неизвестный";
-            if (emailEl) emailEl.innerText = user.email || "Нет email";
-            if (emeraldsEl) emeraldsEl.innerText = user.emeralds || 0;
-
-        } catch (e) {
-            localStorage.removeItem('user');
-            window.location.href = "login.html";
-        }
+        });
     }
 
     // --- ВЫХОД ---
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('user');
+            localStorage.clear();
             window.location.href = "index.html";
         });
     }
 
     // ==========================================
-    // 3. ЛОГИКА КАТАЛОГА (Загрузка книг из БД)
+    // 3. ЛОГИКА ПРОФИЛЯ (Запускается только в profile.html)
     // ==========================================
-    if (window.location.pathname.includes('catalog.html')) {
+    if (document.getElementById('profile-username')) {
+        const user = getUser();
+        const token = getToken();
+        
+        if (!user || !token) {
+            window.location.href = "login.html";
+        } else {
+            // Заполняем данные
+            document.getElementById('profile-username').innerText = user.username;
+            document.getElementById('profile-email').innerText = user.email;
+            document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
+
+            // Запускаем функции
+            renderStreak(user);        
+            loadUserCollection(token); 
+            renderBorrowedBooks(token);
+            renderCalendar();          
+        }
+    }
+
+    // ==========================================
+    // 4. КАТАЛОГ КНИГ
+    // ==========================================
+    if (document.getElementById('booksGrid')) {
         loadBooks();
     }
 
     async function loadBooks() {
-        const container = document.getElementById('booksGrid'); // Ищем сетку книг
-        if (!container) return;
-
-        container.innerHTML = '<p style="text-align:center; width:100%;">Загрузка книг...</p>';
+        const container = document.getElementById('booksGrid');
+        container.innerHTML = '<p style="text-align:center; width:100%;">Загрузка библиотеки...</p>';
 
         try {
-            // Запрос к нашему BooksController
             const response = await fetch(`${API_URL}/books`);
-            if (!response.ok) throw new Error("Ошибка загрузки");
-            
             const books = await response.json();
             
             if (books.length === 0) {
-                container.innerHTML = '<p style="text-align:center; width:100%;">Библиотека пока пуста.</p>';
+                container.innerHTML = '<p style="text-align:center; width:100%;">Библиотека пуста.</p>';
                 return;
             }
 
-            container.innerHTML = ''; // Очищаем "Загрузку..."
-
-            // Рисуем книги
-            books.forEach(book => {
-                const image = (book.coverImage && book.coverImage.length > 5) 
-                    ? `<img src="${book.coverImage}" class="book-cover">` 
-                    : `<div class="book-cover">📖</div>`;
-
+            container.innerHTML = ''; 
+            books.forEach((book, index) => {
                 const card = document.createElement('div');
                 card.className = 'book-card fade-in';
+                card.style.animationDelay = `${index * 0.05}s`;
                 
-                // Вот здесь мы добавляем кнопку ЧИТАТЬ
                 card.innerHTML = `
-                    ${image}
-                    <div class="book-info">
-                        <h3 class="book-title">${book.title}</h3>
-                        <p class="book-author">${book.author}</p>
-                        
-                        <div class="book-footer" style="display: flex; gap: 10px; margin-top: auto;">
-                            <!-- Кнопка ВЗЯТЬ -->
-                            <button class="btn btn-secondary btn-small" style="flex: 1;" 
-                                onclick="takeBook(${book.id}, '${book.title.replace(/'/g, "\\'")}')">
-                                Взять
-                            </button>
-
-                            <!-- Кнопка ЧИТАТЬ (Новая) -->
-                            <a href="${book.fileUrl}" target="_blank" rel="noreferrer" 
-                               class="btn btn-primary btn-small" 
-                               style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
-                                Читать
-                            </a>
-                        </div>
+                    <div class="book-cover-wrapper" onclick="window.location.href='book-details.html?id=${book.id}'">
+                        <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" 
+                             class="book-cover" 
+                             onerror="this.src='https://via.placeholder.com/200x300?text=No+Cover'">
+                    </div>
+                    <div class="book-title" onclick="window.location.href='book-details.html?id=${book.id}'">
+                        ${book.title}
                     </div>
                 `;
-                
                 container.appendChild(card);
             });
-
         } catch (error) {
-            console.error(error);
             container.innerHTML = '<p style="text-align:center; color:red;">Не удалось загрузить книги.</p>';
         }
+    }
+
+    // ==========================================
+    // 5. ЛОГИКА СТРИКОВ (ОГОНЬ)
+    // ==========================================
+    function renderStreak(user) {
+        const badge = document.getElementById('streak-badge');
+        const countEl = document.getElementById('streak-count');
+        
+        // Если элементов нет на странице (например, мы не в профиле), выходим
+        if (!badge || !countEl) return;
+
+        // Показываем бейдж (в HTML он display: none)
+        badge.style.display = 'flex';
+
+        // 1. Стрик потерян?
+        if (user.streakLost) {
+            badge.className = 'streak-badge fire-lost';
+            countEl.innerText = user.savedStreak || 0;
+            badge.onclick = () => showRestoreModal(user);
+            return;
+        }
+
+        // 2. Стрик активен
+        const streak = user.streak || 1;
+        countEl.innerText = streak;
+        
+        // Сброс и установка класса огня
+        badge.className = 'streak-badge'; 
+        if (streak >= 100) badge.classList.add('fire-lvl-5');
+        else if (streak >= 60) badge.classList.add('fire-lvl-5');
+        else if (streak >= 30) badge.classList.add('fire-lvl-4');
+        else if (streak >= 15) badge.classList.add('fire-lvl-3');
+        else if (streak >= 7)  badge.classList.add('fire-lvl-2');
+        else                   badge.classList.add('fire-lvl-1');
+
+        // Клик по активному стрику
+        badge.onclick = () => {
+            const nextTarget = getNextLevelTarget(streak);
+            const daysLeft = nextTarget - streak;
+            let text = `Ты заходишь в библиотеку ${streak} дн. подряд!`;
+            if (daysLeft > 0) text += `\nДо следующего уровня огня: ${daysLeft} дн.`;
+            else text += `\nТы легенда огня! 🔥`;
+
+            showModal({ title: "Ударный режим 🔥", text: text, showCancel: false });
+        };
+    }
+
+    function getNextLevelTarget(current) {
+        if (current < 7) return 7;
+        if (current < 15) return 15;
+        if (current < 30) return 30;
+        if (current < 60) return 60;
+        return 100;
+    }
+
+    function showRestoreModal(user) {
+        const COST = 50;
+        showModal({
+            title: "Огонь погас! ❄️",
+            text: `Ты пропустил день. Твой стрик (${user.savedStreak} дн.) сгорел. Восстановить за ${COST} 💎?`,
+            icon: "😱",
+            onConfirm: () => restoreStreakAction(COST)
+        });
+    }
+
+    async function restoreStreakAction(cost) {
+        const token = getToken();
+        let user = getUser();
+
+        if ((user.emeralds || 0) < cost) {
+            showModal({ title: "Ошибка", text: "Недостаточно изумрудов!", showCancel: false });
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/users/restore-streak`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Обновляем данные
+                user.emeralds = data.newEmeralds;
+                user.streak = data.restoredStreak;
+                user.streakLost = false;
+                user.savedStreak = 0;
+                updateUser(user);
+
+                // Обновляем UI
+                document.getElementById('profile-emeralds').innerText = user.emeralds;
+                renderStreak(user);
+
+                showModal({ title: "Успех!", text: "Огонь снова горит! 🔥", showCancel: false, icon: "✨" });
+            } else {
+                showModal({ title: "Ошибка", text: "Не удалось восстановить.", showCancel: false });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // ==========================================
+    // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (Коллекции, Книги)
+    // ==========================================
+    
+    async function loadUserCollection(token) {
+        const container = document.getElementById('collectionContainer');
+        if(!container) return;
+
+        try {
+            const response = await fetch(`${API_URL}/shop/my-cards`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const cards = await response.json();
+            if (cards.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Коллекция пуста.</p>';
+                return;
+            }
+            const getRankColor = (r) => ({'S':'#ffd700','A':'#9b5de5','B':'#00bbf9','C':'#00f5d4','D':'#a8a8a8','E':'#cd7f32'}[r.toUpperCase()] || 'transparent');
+            
+            container.innerHTML = `<div class="collection-grid">${cards.map(card => `
+                <div class="collection-item scroll-reveal" style="border-color: ${getRankColor(card.rank)}">
+                    <img src="${card.image || 'assets/images/card/common/D.jpg'}" alt="${card.name}">
+                    <div class="rank-tag">${card.rank}</div>
+                </div>`).join('')}</div>`;
+        } catch (err) {
+            container.innerHTML = '<p style="color: var(--status-unavailable);">Ошибка загрузки карт.</p>';
+        }
+    }
+
+    async function renderBorrowedBooks(token) {
+        const list = document.getElementById('borrowedBooksList');
+        const empty = document.getElementById('noBooksMessage');
+        if(!list) return;
+
+        try {
+            const response = await fetch(`${API_URL}/library/my-books`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const books = await response.json();
+
+            if (books.length === 0) {
+                list.innerHTML = '';
+                if(empty) empty.style.display = 'block';
+                return;
+            }
+
+            if(empty) empty.style.display = 'none';
+            list.innerHTML = books.map(b => `
+                <div style="background: rgba(255,255,255,0.6); padding:1.5rem; margin-bottom:1rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 2rem;">📖</div>
+                        <div>
+                            <strong style="font-size:1.2rem; color:var(--text); font-family: var(--font-heading);">${b.title}</strong><br>
+                            <span style="color:var(--text-muted);">${b.author}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${b.fileUrl ? `<a href="${b.fileUrl}" target="_blank" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Читать</a>` : ''}
+                        <button onclick="window.handleReturnBook(${b.id})" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Вернуть</button>
+                    </div>
+                </div>`).join('');
+        } catch (err) {
+            list.innerHTML = '<p style="color: var(--status-unavailable);">Не удалось загрузить полку.</p>';
+        }
+    }
+
+    function renderCalendar() {
+        const calendar = document.getElementById('readingCalendar');
+        if(!calendar) return;
+        const today = new Date();
+        let html = '';
+        for(let i=19; i>=0; i--) {
+            const d = new Date(); d.setDate(today.getDate() - i);
+            const isToday = i === 0;
+            const hasActivity = Math.random() > 0.6 || isToday; 
+            let bg = isToday ? 'var(--accent)' : (hasActivity ? 'rgba(212, 175, 55, 0.4)' : 'rgba(139, 69, 19, 0.1)');
+            let color = isToday ? 'white' : (hasActivity ? 'var(--text)' : 'var(--text-light)');
+            html += `<div class="calendar-day" style="background:${bg}; color:${color}">${d.getDate()}</div>`;
+        }
+        calendar.innerHTML = html;
+    }
+
+    // ==========================================
+    // 7. УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО
+    // ==========================================
+    window.showModal = function({ title, text, icon, onConfirm, showCancel = true }) {
+        let modal = document.getElementById('appModal');
+        // Создаем модалку, если её нет в HTML
+        if (!modal) {
+            createModalMarkup();
+            modal = document.getElementById('appModal');
+        }
+
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalText').innerText = text;
+        document.getElementById('modalIcon').innerText = icon || '🔔';
+        
+        const actionsEl = document.getElementById('modalActions');
+        actionsEl.innerHTML = ''; 
+
+        if (showCancel) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn-modal btn-cancel';
+            cancelBtn.innerText = 'Отмена';
+            cancelBtn.onclick = closeModal;
+            actionsEl.appendChild(cancelBtn);
+        }
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn-modal btn-confirm';
+        confirmBtn.innerText = showCancel ? 'Подтвердить' : 'ОК';
+        confirmBtn.onclick = () => {
+            if (onConfirm) onConfirm();
+            closeModal();
+        };
+        actionsEl.appendChild(confirmBtn);
+
+        modal.classList.add('active');
+    };
+
+    window.closeModal = function() {
+        const modal = document.getElementById('appModal');
+        if(modal) modal.classList.remove('active');
+    };
+
+    function createModalMarkup() {
+        const div = document.createElement('div');
+        div.id = 'appModal';
+        div.className = 'modal-overlay';
+        div.innerHTML = `
+            <div class="modal-window">
+                <span id="modalIcon" class="modal-icon">🔔</span>
+                <h3 id="modalTitle" class="modal-title"></h3>
+                <p id="modalText" class="modal-text"></p>
+                <div id="modalActions" class="modal-actions"></div>
+            </div>
+        `;
+        document.body.appendChild(div);
     }
 });
 
 // ==========================================
-// 4. ГЛОБАЛЬНАЯ ФУНКЦИЯ: ВЗЯТЬ КНИГУ (ЧЕРЕЗ БД)
+// 8. ГЛОБАЛЬНЫЕ ФУНКЦИИ (ДЛЯ ONCLICK В HTML)
 // ==========================================
+
+// Взять книгу
 window.takeBook = async function(bookId, title) {
-    // 1. Проверяем вход
-    const userJson = localStorage.getItem('user');
-    if (!userJson) {
-        alert("Сначала войдите в аккаунт!");
+    const token = localStorage.getItem('token');
+    if (!token) {
         window.location.href = "login.html";
         return;
     }
+    const API_URL = "http://localhost:5283/api";
     
-    const user = JSON.parse(userJson);
-    const API_URL = "http://localhost:5283/api"; // <-- ПОРТ
-
-    // 2. Отправляем запрос на сервер (в LibraryController)
     try {
-        const response = await fetch(`${API_URL}/library/borrow`, {
+        const response = await fetch(`${API_URL}/library/borrow/${bookId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id, bookId: bookId })
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        const data = await response.json();
-
         if (response.ok) {
-            alert(`Книга "${title}" добавлена на полку!`);
+            showModal({ title: "Успех", text: `Книга "${title}" добавлена на полку!`, showCancel: false, icon: "📖" });
         } else {
-            alert("Ошибка: " + (data.message || "Не удалось взять книгу"));
+            const data = await response.json();
+            showModal({ title: "Ошибка", text: data.message || "Ошибка", showCancel: false });
         }
-
     } catch (error) {
-        console.error(error);
-        alert("Ошибка сервера!");
+        showModal({ title: "Ошибка", text: "Ошибка связи с сервером", showCancel: false });
     }
+};
+
+// Вернуть книгу
+window.handleReturnBook = function(bookId) {
+    const API_URL = "http://localhost:5283/api";
+    
+    showModal({
+        title: "Вернуть книгу?",
+        text: "Вы уверены, что хотите вернуть книгу?",
+        icon: "👋",
+        onConfirm: async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`${API_URL}/library/return/${bookId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    showModal({ 
+                        title: "Возвращено", 
+                        text: "Книга возвращена в библиотеку.", 
+                        showCancel: false,
+                        onConfirm: () => window.location.reload() 
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    });
 };
