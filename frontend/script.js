@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- ВХОД ---
+    // --- ВХОД (С НАГРАДОЙ) ---
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -83,7 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     localStorage.setItem('token', data.token); 
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    window.location.href = "profile.html";
+                    
+                    // Проверка награды за вход
+                    if (data.loginReward) {
+                        showModal({ 
+                            title: "Ежедневная награда!", 
+                            text: data.loginReward, 
+                            icon: "🎁", 
+                            showCancel: false, 
+                            onConfirm: () => window.location.href = "profile.html" 
+                        });
+                    } else {
+                        window.location.href = "profile.html";
+                    }
                 } else {
                     showModal({ title: "Ошибка", text: data.message || "Неверные данные", showCancel: false });
                 }
@@ -103,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 3. ЛОГИКА ПРОФИЛЯ (Запускается только в profile.html)
+    // 3. ЛОГИКА ПРОФИЛЯ
     // ==========================================
     if (document.getElementById('profile-username')) {
         const user = getUser();
@@ -112,16 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user || !token) {
             window.location.href = "login.html";
         } else {
-            // Заполняем данные
             document.getElementById('profile-username').innerText = user.username;
             document.getElementById('profile-email').innerText = user.email;
             document.getElementById('profile-emeralds').innerText = user.emeralds || 0;
 
-            // Запускаем функции
             renderStreak(user);        
             loadUserCollection(token); 
             renderBorrowedBooks(token);
-            renderCalendar();          
+            renderCalendar(); 
         }
     }
 
@@ -169,19 +179,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // 4.1. ДЕТАЛИ КНИГИ И КОММЕНТАРИИ
+    // ==========================================
+    if (document.getElementById('commentsList')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+        if (bookId) {
+            loadComments(bookId);
+        }
+    }
+
+    // ==========================================
     // 5. ЛОГИКА СТРИКОВ (ОГОНЬ)
     // ==========================================
     function renderStreak(user) {
         const badge = document.getElementById('streak-badge');
         const countEl = document.getElementById('streak-count');
         
-        // Если элементов нет на странице (например, мы не в профиле), выходим
         if (!badge || !countEl) return;
 
-        // Показываем бейдж (в HTML он display: none)
         badge.style.display = 'flex';
 
-        // 1. Стрик потерян?
         if (user.streakLost) {
             badge.className = 'streak-badge fire-lost';
             countEl.innerText = user.savedStreak || 0;
@@ -189,11 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 2. Стрик активен
         const streak = user.streak || 1;
         countEl.innerText = streak;
         
-        // Сброс и установка класса огня
         badge.className = 'streak-badge'; 
         if (streak >= 100) badge.classList.add('fire-lvl-5');
         else if (streak >= 60) badge.classList.add('fire-lvl-5');
@@ -202,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (streak >= 7)  badge.classList.add('fire-lvl-2');
         else                   badge.classList.add('fire-lvl-1');
 
-        // Клик по активному стрику
         badge.onclick = () => {
             const nextTarget = getNextLevelTarget(streak);
             const daysLeft = nextTarget - streak;
@@ -249,15 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // Обновляем данные
                 user.emeralds = data.newEmeralds;
                 user.streak = data.restoredStreak;
                 user.streakLost = false;
                 user.savedStreak = 0;
                 updateUser(user);
 
-                // Обновляем UI
                 document.getElementById('profile-emeralds').innerText = user.emeralds;
                 renderStreak(user);
 
@@ -271,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (Коллекции, Книги)
+    // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
     // ==========================================
     
     async function loadUserCollection(token) {
@@ -336,18 +348,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderCalendar() {
+    async function renderCalendar() {
         const calendar = document.getElementById('readingCalendar');
-        if(!calendar) return;
+        if (!calendar) return;
+
+        const token = getToken();
+        let activeDates = [];
+
+        try {
+            const response = await fetch(`${API_URL}/progress/activity`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                activeDates = await response.json(); 
+            }
+        } catch (e) {
+            console.error("Ошибка загрузки календаря:", e);
+        }
+
         const today = new Date();
         let html = '';
-        for(let i=19; i>=0; i--) {
-            const d = new Date(); d.setDate(today.getDate() - i);
-            const isToday = i === 0;
-            const hasActivity = Math.random() > 0.6 || isToday; 
-            let bg = isToday ? 'var(--accent)' : (hasActivity ? 'rgba(212, 175, 55, 0.4)' : 'rgba(139, 69, 19, 0.1)');
-            let color = isToday ? 'white' : (hasActivity ? 'var(--text)' : 'var(--text-light)');
-            html += `<div class="calendar-day" style="background:${bg}; color:${color}">${d.getDate()}</div>`;
+
+        for (let i = 19; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+
+            const isToday = (i === 0);
+            const isActive = activeDates.includes(dateString) || isToday; 
+
+            let bg = 'rgba(139, 69, 19, 0.1)';
+            let color = 'var(--text-muted)';
+            let border = '1px solid transparent';
+            
+            if (isToday) {
+                bg = '#8B4513';
+                color = '#fff';
+            } else if (isActive) {
+                bg = '#E6DfbF';
+                color = '#5a3a22';
+            }
+
+            html += `
+                <div class="calendar-day" 
+                     style="background:${bg}; color:${color}; border:${border}" 
+                     title="${dateString}">
+                     ${d.getDate()}
+                </div>`;
         }
         calendar.innerHTML = html;
     }
@@ -357,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     window.showModal = function({ title, text, icon, onConfirm, showCancel = true }) {
         let modal = document.getElementById('appModal');
-        // Создаем модалку, если её нет в HTML
         if (!modal) {
             createModalMarkup();
             modal = document.getElementById('appModal');
@@ -412,10 +462,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// 8. ГЛОБАЛЬНЫЕ ФУНКЦИИ (ДЛЯ ONCLICK В HTML)
+// 8. ГЛОБАЛЬНЫЕ ФУНКЦИИ (ДЛЯ ONCLICK)
 // ==========================================
 
-// Взять книгу
 window.takeBook = async function(bookId, title) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -444,7 +493,6 @@ window.takeBook = async function(bookId, title) {
     }
 };
 
-// Вернуть книгу
 window.handleReturnBook = function(bookId) {
     const API_URL = "http://localhost:5283/api";
     
@@ -472,4 +520,225 @@ window.handleReturnBook = function(bookId) {
             }
         }
     });
+};
+
+// ==========================================
+// 9. КОММЕНТАРИИ (НОВОЕ)
+// ==========================================
+
+async function loadComments(bookId) {
+    const API_URL = "http://localhost:5283/api";
+    const list = document.getElementById('commentsList');
+    const token = localStorage.getItem('token');
+    
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+        const response = await fetch(`${API_URL}/comments/${bookId}`, { headers });
+        const comments = await response.json();
+
+        if (comments.length === 0) {
+            list.innerHTML = '<p style="color: var(--text-muted);">Пока нет комментариев. Будьте первым!</p>';
+            return;
+        }
+
+        list.innerHTML = comments.map(c => `
+            <div class="comment-card ${c.isMyComment ? 'my-comment' : ''}">
+                <div class="comment-header">
+                    <span class="comment-author">${c.username}</span>
+                    <span class="comment-date">${new Date(c.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div class="comment-text">${c.text}</div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error(error);
+        list.innerHTML = '<p style="color: red;">Не удалось загрузить комментарии.</p>';
+    }
+}
+
+window.postComment = async function() {
+    const API_URL = "http://localhost:5283/api";
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('id');
+
+    if (!bookId) return;
+
+    const input = document.getElementById('commentInput');
+    const text = input.value.trim();
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        showModal({ title: "Внимание", text: "Войдите, чтобы оставлять комментарии.", showCancel: false });
+        return;
+    }
+
+    if (!text) return;
+
+    try {
+        const response = await fetch(`${API_URL}/comments`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ bookId: bookId, text: text })
+        });
+
+        // Теперь читаем JSON сразу
+        const data = await response.json();
+
+        if (response.ok) {
+            input.value = ''; // Очистить
+            loadComments(bookId); // Обновить список
+            
+            if (data.reward && data.reward > 0) {
+                let user = JSON.parse(localStorage.getItem('user'));
+                user.emeralds = (user.emeralds || 0) + data.reward;
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                showModal({ 
+                    title: "Награда! 💎", 
+                    text: data.message || `Вы получили +${data.reward} изумрудов!`, 
+                    icon: "✨", 
+                    showCancel: false 
+                });
+            }
+        } else {
+            showModal({ title: "Ошибка", text: data.message || "Не удалось отправить.", showCancel: false });
+        }
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+// ==========================================
+// 10. МАГАЗИН (ПОКУПКА КАРТ)
+// ==========================================
+window.buyCard = async function(cardId, price, cardName) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (!user) {
+        showModal({ title: "Ошибка", text: "Войдите, чтобы покупать карты!", showCancel: false });
+        return;
+    }
+
+    if ((user.emeralds || 0) < price) {
+        showModal({ 
+            title: "Не хватает средств", 
+            text: `У вас ${user.emeralds} 💎, а нужно ${price}.`, 
+            icon: "💎", 
+            showCancel: false 
+        });
+        return;
+    }
+
+    showModal({
+        title: "Покупка карты",
+        text: `Купить "${cardName}" за ${price} 💎?`,
+        icon: "🛒",
+        onConfirm: async () => {
+            const token = localStorage.getItem('token');
+            const API_URL = "http://localhost:5283/api"; 
+
+            try {
+                const response = await fetch(`${API_URL}/shop/buy-card/${cardId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    user.emeralds = data.remainingEmeralds; 
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    const gemEl = document.getElementById('profile-emeralds');
+                    if(gemEl) gemEl.innerText = user.emeralds;
+
+                    showModal({ 
+                        title: "Успешно!", 
+                        text: `Вы получили карту: ${cardName}!`, 
+                        icon: "✨", 
+                        showCancel: false 
+                    });
+                } else {
+                    showModal({ title: "Ошибка", text: data.message || "Не удалось купить.", showCancel: false });
+                }
+            } catch (e) {
+                console.error(e);
+                showModal({ title: "Ошибка", text: "Сервер недоступен.", showCancel: false });
+            }
+        }
+    });
+};
+
+// ==========================================
+// 11. СИСТЕМА ЧТЕНИЯ (ТАЙМЕР)
+// ==========================================
+let readingInterval = null;
+
+window.startReadingSession = function(fileUrl) {
+    // 1. Открываем книгу (если ссылка валидная)
+    if (fileUrl && fileUrl !== '#' && fileUrl !== 'null' && fileUrl !== '') {
+        window.open(fileUrl, '_blank');
+    }
+
+    // 2. Если таймер уже идет — не запускаем новый
+    if (readingInterval) {
+        showModal({ title: "Чтение", text: "Таймер уже работает! Продолжайте читать.", icon: "⏱️", showCancel: false });
+        return;
+    }
+
+    // 3. Запускаем таймер
+    showModal({ 
+        title: "Режим чтения 📖", 
+        text: "Таймер запущен! Каждую минуту вы будете получать награды (до 60 мин/день). Не закрывайте эту вкладку.", 
+        showCancel: false 
+    });
+
+    readingInterval = setInterval(async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const API_URL = "http://localhost:5283/api"; // URL должен быть верным
+            const response = await fetch(`${API_URL}/progress/track-time`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Минута засчитана:", data);
+
+                // === ОБНОВЛЕНИЕ UI ===
+                let user = JSON.parse(localStorage.getItem('user'));
+                
+                // 1. Если просто минута (и лимит не исчерпан) — добавляем +1 визуально
+                if (data.minutesRead <= 60) {
+                    user.emeralds = (user.emeralds || 0) + 1;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // Обновляем виджеты на странице (если есть)
+                    const gemEl = document.getElementById('profile-emeralds');
+                    if(gemEl) gemEl.innerText = user.emeralds;
+                }
+
+                // 2. Если выпала РУЛЕТКА (15 минут или недельный бонус)
+                if (data.rewardType && data.rewardType !== 'none') {
+                    showModal({ 
+                        title: "🎁 БОНУС!", 
+                        text: data.message, 
+                        icon: "🎉", 
+                        showCancel: false 
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Ошибка таймера:", e);
+        }
+    }, 60000); // 60000 мс = 1 минута
 };
