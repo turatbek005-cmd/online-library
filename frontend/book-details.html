@@ -2,10 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Детали книги — The Book</title>
+  
+  <!-- Заглушка для иконки (чтобы не было ошибки 404 favicon.ico) -->
+  <link rel="icon" href="data:,">
+
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
+  <!-- Твой файл стилей для комментариев -->
+  <link rel="stylesheet" href="css/commets.css"> 
+  
   <style>
     .book-details-layout { display: flex; gap: 4rem; margin-top: 3rem; background: var(--surface); padding: 3rem; border-radius: 24px; border: 1px solid var(--border); }
     .book-left { width: 320px; flex-shrink: 0; }
@@ -23,7 +31,14 @@
 
     .book-description { font-size: 1.1rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 2rem; }
     .action-group { display: flex; gap: 1.5rem; }
-    .btn-massive { padding: 1.2rem 2.5rem; flex: 1; text-align: center; }
+    .btn-massive { padding: 1.2rem 2.5rem; flex: 1; text-align: center; font-size: 1.1rem; cursor: pointer; }
+
+    /* Адаптив */
+    @media (max-width: 900px) {
+        .book-details-layout { flex-direction: column; align-items: center; }
+        .book-left { width: 250px; }
+        .book-title-big { font-size: 2.5rem; text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -43,74 +58,61 @@
 
   <main class="container">
     <div id="bookDetails" class="book-details-layout">
-        <p style="text-align: center; width: 100%;">Загрузка знаний...</p>
+        <p style="text-align: center; width: 100%; color: var(--text-muted);">Загрузка магии...</p>
+    </div>
+
+    <!-- СЕКЦИЯ КОММЕНТАРИЕВ -->
+    <div class="comments-wrapper" style="margin-top: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <h3 class="section-title">💬 Обсуждение книги</h3>
+        
+        <!-- Форма отправки -->
+        <div id="commentFormContainer" style="margin-bottom: 2rem; display: flex; gap: 10px;">
+            <input type="text" id="commentInput" placeholder="Поделитесь мнением..." 
+                   style="flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text);">
+            <button onclick="postComment()" class="btn btn-primary">Отправить</button>
+        </div>
+
+        <!-- Список комментариев -->
+        <div id="commentsList" style="display: flex; flex-direction: column; gap: 1rem;">
+            <p style="color: var(--text-muted);">Загрузка комментариев...</p>
+        </div>
     </div>
   </main>
 
-    <!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
-    <div id="appModal" class="modal-overlay">
-        <div class="modal-window">
-            <span id="modalIcon" class="modal-icon">📚</span>
-            <h3 id="modalTitle" class="modal-title">Заголовок</h3>
-            <p id="modalText" class="modal-text">Текст сообщения...</p>
-            <div id="modalActions" class="modal-actions">
-                <!-- Кнопки будут генерироваться через JS -->
-            </div>
-        </div>
-    </div>
+  <!-- УНИВЕРСАЛЬНОЕ МОДАЛЬНОЕ ОКНО -->
+  <div id="appModal" class="modal-overlay">
+      <div class="modal-window">
+          <span id="modalIcon" class="modal-icon">📚</span>
+          <h3 id="modalTitle" class="modal-title">Заголовок</h3>
+          <p id="modalText" class="modal-text">Текст сообщения...</p>
+          <div id="modalActions" class="modal-actions"></div>
+      </div>
+  </div>
+
+  <!-- ВАЖНО: Подключаем script.js (путь js/script.js) -->
+  <script src="script.js"></script>
 
   <script>
-    const API_URL = "http://localhost:5283/api";
+    // Локальный URL для этой страницы
+    const LOCAL_API_URL = "http://localhost:5283/api"; 
     const params = new URLSearchParams(window.location.search);
     const bookId = params.get('id');
 
     document.addEventListener('DOMContentLoaded', () => {
         if (!bookId) { window.location.href = "catalog.html"; return; }
+        
         loadBookDetails();
+        
+        // Загружаем комментарии (функция из script.js)
+        if (typeof loadComments === "function") {
+            loadComments(bookId);
+        }
     });
 
-    // === ФУНКЦИИ МОДАЛЬНОГО ОКНА (ОБЯЗАТЕЛЬНО) ===
-    function showModal({ title, text, icon, onConfirm, showCancel = true }) {
-        const modal = document.getElementById('appModal');
-        // Проверка на случай, если HTML забыли вставить
-        if(!modal) { alert(text); return; }
-
-        document.getElementById('modalTitle').innerText = title;
-        document.getElementById('modalText').innerText = text;
-        document.getElementById('modalIcon').innerText = icon || '🔔';
-        
-        const actionsEl = document.getElementById('modalActions');
-        actionsEl.innerHTML = '';
-
-        if (showCancel) {
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'btn-modal btn-cancel';
-            cancelBtn.innerText = 'Отмена';
-            cancelBtn.onclick = closeModal;
-            actionsEl.appendChild(cancelBtn);
-        }
-
-        const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'btn-modal btn-confirm';
-        confirmBtn.innerText = 'OK';
-        confirmBtn.onclick = () => {
-            if (onConfirm) onConfirm();
-            closeModal();
-        };
-        actionsEl.appendChild(confirmBtn);
-
-        modal.classList.add('active');
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('appModal');
-        if(modal) modal.classList.remove('active');
-    }
-
-    // === ОСНОВНАЯ ЛОГИКА ===
+    // === ЛОГИКА ЗАГРУЗКИ КНИГИ ===
     async function loadBookDetails() {
         try {
-            const res = await fetch(`${API_URL}/books/${bookId}`);
+            const res = await fetch(`${LOCAL_API_URL}/books/${bookId}`);
             if (!res.ok) throw new Error();
             const book = await res.json();
 
@@ -118,7 +120,7 @@
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const shelfRes = await fetch(`${API_URL}/library/my-books`, {
+                    const shelfRes = await fetch(`${LOCAL_API_URL}/library/my-books`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if(shelfRes.ok) {
@@ -130,15 +132,24 @@
 
             renderPage(book, isBorrowed);
         } catch (e) {
-            document.getElementById('bookDetails').innerHTML = "<h2 style='text-align:center'>Книга не найдена</h2>";
+            document.getElementById('bookDetails').innerHTML = "<h2 style='text-align:center; color: var(--text);'>Книга не найдена</h2>";
         }
     }
 
     function renderPage(book, isBorrowed) {
         const container = document.getElementById('bookDetails');
+        
+        // === ИСПРАВЛЕНИЕ: Кнопка Читать вызывает startReadingSession ===
+        // Это запускает таймер наград
+        const readButtonHtml = `
+            <button onclick="startReadingSession('${book.fileUrl || ''}')" class="btn btn-primary btn-massive">
+                Читать онлайн
+            </button>
+        `;
+
         container.innerHTML = `
             <div class="book-left">
-                <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" class="book-cover-large">
+                <img src="${book.coverImage || 'assets/images/placeholder.jpg'}" class="book-cover-large" onerror="this.src='https://via.placeholder.com/300x450?text=No+Cover'">
             </div>
             <div class="book-right">
                 <h1 class="book-title-big">${book.title}</h1>
@@ -151,14 +162,14 @@
                         <span class="star" onclick="sendRate(2)">★</span>
                         <span class="star" onclick="sendRate(1)">★</span>
                     </div>
-                    <div class="avg-val">★ ${book.rating || 0}</div>
+                    <div class="avg-val">★ ${book.rating ? book.rating.toFixed(1) : 0}</div>
                 </div>
 
-                <p style="color:var(--text); font-weight:600; margin-bottom:1rem;">${book.author} • ${book.genre}</p>
-                <div class="book-description">${book.description}</div>
+                <p style="color:var(--text); font-weight:600; margin-bottom:1rem; font-size: 1.2rem;">${book.author} • ${book.genre || 'Жанр не указан'}</p>
+                <div class="book-description">${book.description || 'Описание отсутствует.'}</div>
                 
                 <div class="action-group">
-                    <a href="${book.fileUrl || '#'}" target="_blank" class="btn btn-primary btn-massive">Читать</a>
+                    ${readButtonHtml}
                     <button onclick="toggleShelf(${book.id}, ${isBorrowed})" class="btn ${isBorrowed ? 'btn-secondary' : 'btn-primary'} btn-massive">
                         ${isBorrowed ? 'Убрать из полки' : 'В избранное'}
                     </button>
@@ -167,22 +178,17 @@
         `;
     }
 
+    // Оценка книги
     async function sendRate(val) {
         const token = localStorage.getItem('token');
         
         if(!token) { 
-            showModal({
-                title: "Вход не выполнен",
-                text: "Чтобы ставить оценки, нужно войти в аккаунт.",
-                icon: "🔒",
-                showCancel: false,
-                onConfirm: () => window.location.href = 'login.html'
-            });
+            showModal({ title: "Вход не выполнен", text: "Чтобы ставить оценки, нужно войти.", showCancel: false });
             return; 
         }
 
         try {
-            const res = await fetch(`${API_URL}/books/rate`, {
+            const res = await fetch(`${LOCAL_API_URL}/books/rate`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -192,38 +198,28 @@
             });
 
             if(res.ok) {
-                showModal({
-                    title: "Спасибо!",
-                    text: "Ваша оценка успешно сохранена.",
-                    icon: "✨",
-                    showCancel: false,
-                    onConfirm: () => location.reload()
-                });
+                showModal({ title: "Спасибо!", text: "Ваша оценка сохранена.", icon: "✨", showCancel: false, onConfirm: () => location.reload() });
             } else {
-                showModal({ title: "Ошибка", text: "Не удалось сохранить оценку.", showCancel: false, icon: "❌" });
+                showModal({ title: "Ошибка", text: "Не удалось сохранить оценку.", showCancel: false });
             }
         } catch (e) {
-            showModal({ title: "Ошибка сети", text: "Сервер недоступен.", showCancel: false, icon: "🔌" });
+            console.error(e);
         }
     }
 
+    // Добавление/Удаление из полки
     async function toggleShelf(id, status) {
         const token = localStorage.getItem('token');
         if(!token) {
-             showModal({
-                title: "Вход не выполнен",
-                text: "Войдите, чтобы добавлять книги в избранное.",
-                icon: "🔒",
-                showCancel: false
-            });
+             showModal({ title: "Вход не выполнен", text: "Войдите, чтобы добавлять книги.", showCancel: false });
             return;
         }
 
         const method = status ? 'DELETE' : 'POST';
-        const url = status ? `${API_URL}/library/return/${id}` : `${API_URL}/library/borrow/${id}`;
+        const url = status ? `${LOCAL_API_URL}/library/return/${id}` : `${LOCAL_API_URL}/library/borrow/${id}`;
         
         try {
-            const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } });
             if(res.ok) {
                 showModal({
                     title: status ? "Убрано" : "Добавлено",
@@ -232,11 +228,13 @@
                     showCancel: false,
                     onConfirm: () => location.reload()
                 });
+            } else {
+                showModal({ title: "Ошибка", text: "Не удалось изменить статус книги.", showCancel: false });
             }
         } catch(e) {
             console.error(e);
         }
     }
-</script>
+  </script>
 </body>
 </html>

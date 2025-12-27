@@ -13,6 +13,31 @@ public class ProgressController : ControllerBase
     private readonly IConfiguration _config;
     public ProgressController(IConfiguration config) => _config = config;
 
+    // === ИСТОРИЯ АКТИВНОСТИ (ДЛЯ КАЛЕНДАРЯ) ===
+    [HttpGet("activity")]
+    public async Task<IActionResult> GetActivityLog()
+    {
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
+        var userId = int.Parse(userIdStr);
+        
+        string connStr = _config.GetConnectionString("DefaultConnection")!;
+        await using var conn = new NpgsqlConnection(connStr);
+        await conn.OpenAsync();
+
+        var dates = new List<string>();
+        string sql = "SELECT to_char(date, 'YYYY-MM-DD') FROM daily_progress WHERE user_id = @uid AND visited_library = true AND date > CURRENT_DATE - INTERVAL '30 days'";
+
+        await using var command = new NpgsqlCommand(sql, conn);
+        command.Parameters.AddWithValue("uid", userId);
+        
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) dates.Add(reader.GetString(0));
+
+        return Ok(dates);
+    }
+
+    // === ТРЕКЕР ВРЕМЕНИ + ВСЕ НАГРАДЫ ===
     [HttpPost("track-time")]
     public async Task<IActionResult> TrackTime()
     {
@@ -22,23 +47,21 @@ public class ProgressController : ControllerBase
         await conn.OpenAsync();
 
         string message = "Минута засчитана";
-        string rewardType = "none"; // "gems" или "card"
-        string rewardValue = "";    // Название карты или кол-во денег
+        string rewardType = "none"; 
+        string rewardValue = "";
 
-        // 1. ОБНОВЛЕНИЕ STREAK (Ударный режим)
-        // (Оставляем ту же логику проверки дат, сократил для краткости - она у тебя есть)
-        // ...Представим, что тут код проверки дат и обновления Streak...
-        
-        // Для примера, просто берем текущий стрик:
+        // 1. Получаем стрик (для проверки недельного бонуса)
         int streak = 0;
         var cmdStreak = new NpgsqlCommand("SELECT streak_current FROM users WHERE id = @id", conn);
         cmdStreak.Parameters.AddWithValue("id", userId);
         streak = (int)(await cmdStreak.ExecuteScalarAsync() ?? 0);
 
-        // 2. ОБНОВЛЕНИЕ ВРЕМЕНИ И ПРОВЕРКА НАГРАД
+        // 2. Обновляем время в базе
         string sqlDaily = @"
-            INSERT INTO daily_progress (user_id, date, minutes_read) VALUES (@uid, CURRENT_DATE, 1)
-            ON CONFLICT (user_id, date) DO UPDATE SET minutes_read = daily_progress.minutes_read + 1
+            INSERT INTO daily_progress (user_id, date, minutes_read, visited_library) 
+            VALUES (@uid, CURRENT_DATE, 1, true)
+            ON CONFLICT (user_id, date) 
+            DO UPDATE SET minutes_read = daily_progress.minutes_read + 1, visited_library = true
             RETURNING minutes_read, quest_time_claimed, weekly_bonus_claimed";
 
         var cmdDaily = new NpgsqlCommand(sqlDaily, conn);
@@ -52,29 +75,43 @@ public class ProgressController : ControllerBase
         bool weeklyClaimed = reader.GetBoolean(2);
         await reader.CloseAsync();
 
-        // === ГЛАВНАЯ ЛОГИКА РУЛЕТКИ ===
+        // 3. НАГРАДА: 1 Изумруд за минуту (Лимит 60 в день)
+        if (minutes <= 60)
+        {
+            var cmdGem = new NpgsqlCommand("UPDATE users SET emeralds = emeralds + 1 WHERE id = @id", conn);
+            cmdGem.Parameters.AddWithValue("id", userId);
+            await cmdGem.ExecuteNonQueryAsync();
+            // Мы не возвращаем уведомление каждую минуту, чтобы не спамить
+        }
 
-        // А. ЕЖЕДНЕВНАЯ НАГРАДА (15 минут) -> ОБЫЧНАЯ РУЛЕТКА
+        // 4. НАГРАДА: Ежедневная рулетка (15 минут)
         if (minutes >= 15 && !dailyClaimed)
         {
-            var result = await SpinRoulette(conn, userId, isPremium: false);
+            var result = await SpinRoulette(conn, userId, false);
             rewardType = result.Type;
             rewardValue = result.Value;
-            message = $"🎉 Ежедневная награда! Выпало: {result.Value}";
+            message = $"🎉 Ежедневный квест выполнен! Награда: {result.Value}";
 
-            // Отмечаем, что забрали
             var cmdMark = new NpgsqlCommand("UPDATE daily_progress SET quest_time_claimed = TRUE WHERE user_id = @id AND date = CURRENT_DATE", conn);
             cmdMark.Parameters.AddWithValue("id", userId);
             await cmdMark.ExecuteNonQueryAsync();
         }
 
-        // Б. НЕДЕЛЬНАЯ НАГРАДА (7 дней) -> ПРЕМИУМ РУЛЕТКА
+        // 5. НАГРАДА: Недельная рулетка (7 дней стрика)
         if (streak > 0 && streak % 7 == 0 && !weeklyClaimed)
         {
-            var result = await SpinRoulette(conn, userId, isPremium: true);
-            rewardType = result.Type;
-            rewardValue = result.Value;
-            message = $"🔥 НЕДЕЛЬНЫЙ БОНУС! Премиум рулетка: {result.Value}";
+            var result = await SpinRoulette(conn, userId, true);
+            // Если ежедневная награда тоже выпала, объединяем сообщения
+            if (rewardType != "none") 
+            {
+                message += $"\n🔥 + НЕДЕЛЬНЫЙ БОНУС: {result.Value}";
+            }
+            else 
+            {
+                rewardType = result.Type;
+                rewardValue = result.Value;
+                message = $"🔥 НЕДЕЛЬНЫЙ БОНУС! Премиум рулетка: {result.Value}";
+            }
 
             var cmdMark = new NpgsqlCommand("UPDATE daily_progress SET weekly_bonus_claimed = TRUE WHERE user_id = @id AND date = CURRENT_DATE", conn);
             cmdMark.Parameters.AddWithValue("id", userId);
@@ -84,69 +121,70 @@ public class ProgressController : ControllerBase
         return Ok(new { message, rewardType, rewardValue, minutesRead = minutes, streak });
     }
 
-    // --- ФУНКЦИЯ КРУЧЕНИЯ РУЛЕТКИ (Внутри контроллера) ---
+    // === ЛОГИКА РУЛЕТКИ ===
     private async Task<(string Type, string Value)> SpinRoulette(NpgsqlConnection conn, int userId, bool isPremium)
     {
-        int roll = Random.Shared.Next(1, 101); // 1-100
+        int roll = Random.Shared.Next(1, 101);
         
-        // 1. ШАНС НА ДЕНЬГИ (30%)
-        if (roll <= 30)
+        // 30% шанс на деньги
+        if (roll <= 30) 
         {
-            int amount = isPremium ? Random.Shared.Next(200, 301) : Random.Shared.Next(15, 31); // 200-300 или 15-30
+            int amount = isPremium ? Random.Shared.Next(200, 301) : Random.Shared.Next(15, 31);
             var cmd = new NpgsqlCommand("UPDATE users SET emeralds = emeralds + @am WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("am", amount);
             cmd.Parameters.AddWithValue("id", userId);
             await cmd.ExecuteNonQueryAsync();
             return ("gems", $"{amount} Изумрудов");
         }
-
-        // 2. ШАНС НА КАРТУ (70%)
+        
+        // 70% шанс на карту
         string rank = "E";
-        if (isPremium)
+        int cardRoll = Random.Shared.Next(1, 101);
+
+        if (isPremium) // Улучшенные шансы для недельного бонуса
         {
-            // Крутые шансы
-            int cardRoll = Random.Shared.Next(1, 101);
-            if (cardRoll <= 10) rank = "S";      // 10%
-            else if (cardRoll <= 30) rank = "A"; // 20%
-            else if (cardRoll <= 60) rank = "B"; // 30%
-            else rank = "C";                     // 40% (Утешительный)
+            if (cardRoll <= 15) rank = "S";      // 15% Легендарная
+            else if (cardRoll <= 40) rank = "A"; // 25% Эпик
+            else rank = "B";                     // 60% Редкая (минимум)
         }
-        else
+        else // Обычные шансы
         {
-            // Обычные шансы
-            int cardRoll = Random.Shared.Next(1, 101);
             if (cardRoll <= 1) rank = "S";
             else if (cardRoll <= 5) rank = "A";
-            else if (cardRoll <= 15) rank = "B";
-            else if (cardRoll <= 30) rank = "C";
-            else if (cardRoll <= 60) rank = "D";
-            else rank = "E";
+            else if (cardRoll <= 20) rank = "B";
+            else if (cardRoll <= 50) rank = "C";
+            else rank = "D";
         }
 
-        // Выдаем карту
+        // Выбираем случайную карту этого ранга
         string sql = "SELECT id, name FROM game_cards WHERE rank = @r ORDER BY RANDOM() LIMIT 1";
+
         var cmdCard = new NpgsqlCommand(sql, conn);
         cmdCard.Parameters.AddWithValue("r", rank);
         
         await using var reader = await cmdCard.ExecuteReaderAsync();
+        
         if (await reader.ReadAsync())
         {
-            int cardId = reader.GetInt32(0);
-            string cardName = reader.GetString(1);
+            int cid = reader.GetInt32(0);
+            string cname = reader.GetString(1);
             await reader.CloseAsync();
 
             var cmdGive = new NpgsqlCommand("INSERT INTO user_cards (user_id, card_id) VALUES (@uid, @cid)", conn);
             cmdGive.Parameters.AddWithValue("uid", userId);
-            cmdGive.Parameters.AddWithValue("cid", cardId);
+            cmdGive.Parameters.AddWithValue("cid", cid);
             await cmdGive.ExecuteNonQueryAsync();
 
-            return ("card", $"{cardName} (Ранг {rank})");
+            return ("card", $"{cname} (Ранг {rank})");
         }
         else
         {
-            // Если карта не найдена, дадим деньги
             await reader.CloseAsync();
-            return ("gems", "5 Изумрудов (Ошибка карты)");
+            // Если карты не нашлось, даем утешительный приз
+            var cmdGem = new NpgsqlCommand("UPDATE users SET emeralds = emeralds + 10 WHERE id = @id", conn);
+            cmdGem.Parameters.AddWithValue("id", userId);
+            await cmdGem.ExecuteNonQueryAsync();
+            return ("gems", "10 Изумрудов (карт нет)");
         }
     }
 }
